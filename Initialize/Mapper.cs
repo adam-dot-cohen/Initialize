@@ -50,6 +50,7 @@ public static class Mapper<TFrom, TTo>
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Runtime),
             MetadataReference.CreateFromFile(typeof(Unsafe).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Initializer<>).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(TFrom).GetTypeInfo().Assembly.Location)};
 
         var csharpSyntax = CSharpSyntaxTree.ParseText(result);

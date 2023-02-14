@@ -14,7 +14,7 @@ public class MapperTemplate<TFrom, TTo>
         var type = typeof(TFrom);
         var typeTo = typeof(TTo);
         var sb = new StringBuilder();
-        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Linq;{(type.Namespace != null ? "using " + type.Namespace + ";" : string.Empty)}");
+        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Linq;using Initialize;{(type.Namespace != null ? "using " + type.Namespace + ";" : string.Empty)}");
         sb.Append($"namespace Mapper{type.Name}{{");
         sb.Append($"public static class Map{type.Name}{{");
         sb.Append($"public static void Map({type.FullName.Replace("+", ".")} objFrom, {typeTo.FullName.Replace("+", ".")} objTo){{");

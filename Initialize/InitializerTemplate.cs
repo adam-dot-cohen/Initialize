@@ -55,7 +55,7 @@ public class InitializerTemplate<T>
     {
         var type = typeof(T);
         var sb = new StringBuilder();
-        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Linq;{(type.Namespace != null ? "using " + type.Namespace + ";" : string.Empty)}");
+        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Linq;using Initialize;{(type.Namespace != null ? "using " + type.Namespace + ";" : string.Empty)}");
         sb.Append($"namespace Initializer{type.Name}{{");
         sb.Append($"public static class Init{type.Name}{{");
         sb.Append($"public static void Initialize({type.FullName.Replace("+", ".")} obj){{");
