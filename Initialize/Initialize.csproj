@@ -27,7 +27,7 @@
     <PackageIcon>favicon.png</PackageIcon>
     <LangVersion>latest</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Title>High-Performance Writer for Span&lt;T&gt; and Memory&lt;T&gt; Structures</Title>
+    <Title>High-Performance DTO auto initialier and property mapper</Title>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
     <WarningLevel>6</WarningLevel>
