@@ -1,8 +1,8 @@
 # Overview
 ![]()
-[![NuGet version (Initializer-Alpha)](https://img.shields.io/badge/nuget-v0.0.1-blue?style=flat-square)](https://www.nuget.org/packages/Initializer/)
+[![NuGet version (Initializer)](https://img.shields.io/badge/nuget-v0.0.1-blue?style=flat-square)](https://www.nuget.org/packages/Initializer/)
 
-High performance automatic DTO mapper and properties initializer based on Roslyn dynamic code and compilation
+High performance automatic DTO mapper and property initializer based on Roslyn
 
 # Example Usage
 ```csharp
@@ -12,21 +12,21 @@ High performance automatic DTO mapper and properties initializer based on Roslyn
 	// INITIALIZER EXAMPLE
 	test.Dump("Test Pre Init");
 
-	// 1.Optional If you want to manipuate the default initialization logic.
-	Initializer<Test>.Template.Clear();
+        // 1. Optional - Customize default configuration
+        Initializer<Test>.Template.Clear();
 
-	Initializer<Test>.Template.Add(typeof(string),
-		(obj, propInfo) => "string.Empty");
-	Initializer<Test>.Template.Add(typeof(Nullable<>),
-		(obj, propInfo) => string.Format("{0}.{1}!.InitValueOrDefault()", obj, propInfo.Name));
-	Initializer<Test>.Template.Add(typeof(ValueType),
-		(obj, propInfo) => string.Format("{0}.{1}.InitValueOrDefault()", obj, propInfo.Name));
+        Initializer<Test>.Template.Add(typeof(string),
+            (obj, propInfo, friendlyTypeName) => "string.Empty");
+        Initializer<Test>.Template.Add(typeof(Nullable<>),
+            (obj, propInfo, friendlyTypeName) => 
+	    	string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
+        Initializer<Test>.Template.Add(typeof(ValueType),
+            (obj, propInfo, friendlyTypeName) => "default" );
 		
 	// 2. Call initialize 
 	Initializer<Test>.Initialize(test);
 	test.Dump("Test Post Init");
 	
-
 	//MAPPER EXAMPLE
 	test2.Dump("Test2 Pre Map");
 	Mapper<Test, Test2>.Map(test, test2);
