@@ -16,7 +16,8 @@ public static class Mapper<TFrom, TTo>
     private static Assembly _generatedAssembly;
     private static AssemblyLoadContext _context;
     private static Type _proxyType;
-    internal static Action<TFrom, TTo> CacheDel;
+    private delegate void MapperDelegate(TFrom from, TTo to);
+    private static MapperDelegate CacheDel;
 
     static Mapper()
         => Compile();
@@ -90,7 +91,7 @@ public static class Mapper<TFrom, TTo>
     private static void BuildDelegates()
     {
         var infos = _proxyType.GetMethod(nameof(Map));
-        CacheDel = infos.CreateDelegate<Action<TFrom, TTo>>();
+        CacheDel = infos.CreateDelegate<MapperDelegate>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
