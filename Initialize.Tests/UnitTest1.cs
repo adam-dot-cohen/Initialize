@@ -15,16 +15,17 @@ public class Tests
     {
         var test = new Test();
         var test2 = new Test2();
-        
-        //Initializer<Test>.Template.Clear();
 
-        //Initializer<Test>.Template.Add(typeof(string),
-        //    (obj, propInfo) => "string.Empty");
-        //Initializer<Test>.Template.Add(typeof(Nullable<>),
-        //    (obj, propInfo) => string.Format("{0}.{1}!.InitValueOrDefault()", obj, propInfo.Name));
-        //Initializer<Test>.Template.Add(typeof(ValueType),
-        //    (obj, propInfo) => string.Format("{0}.{1}.InitValueOrDefault()", obj, propInfo.Name));
-		
+        // 1. Optional - Customize default configuration
+        Initializer<Test>.Template.Clear();
+
+        Initializer<Test>.Template.Add(typeof(string),
+            (obj, propInfo, friendlyTypeName) => "string.Empty");
+        Initializer<Test>.Template.Add(typeof(Nullable<>),
+            (obj, propInfo, friendlyTypeName) => string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
+        Initializer<Test>.Template.Add(typeof(ValueType),
+            (obj, propInfo, friendlyTypeName) => "default" );
+
         // 2. Call initialize
         Initializer<Test>.Initialize(test);
 
@@ -38,6 +39,23 @@ public class Tests
         
         Assert.True(initializeResult && mapResult);
     }
+
+    [Test]
+    public void GenerateDtoWithoutNotifyPropertyChanged()
+    {
+        var text = CSharpGeneratorFactory.GenerateDto<Test>("Tester");
+
+        Assert.AreEqual(text, generatedDto);
+    }
+
+    [Test]
+    public void GenerateDtoWithNotifyPropertyChanged()
+    {
+        var text = CSharpGeneratorFactory.GenerateDtoWithNotifyPropertyChanged<Test>("Tester");
+
+        Assert.AreEqual(text, generatedDtoWithPropertyChanged);
+    }
+
     private bool AreAnyPropertiesNull<TObject>(TObject obj, params string[]? exclude)
     {
         foreach (var prop in typeof(TObject).GetProperties(BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.GetProperty)
@@ -60,25 +78,10 @@ public class Tests
         return true;
     }
 
-    [Test]
-    public void GenerateDtoWithoutNotifyPropertyChanged()
-    {
-        var text = CSharpGeneratorFactory.GenerateDto<Test>("Tester");
 
-        Assert.AreEqual(text, generatedDto);
-    }
 
-    [Test]
-    public void GenerateDtoWithNotifyPropertyChanged()
-    {
-        var text = CSharpGeneratorFactory.GenerateDtoWithNotifyPropertyChanged<Test>("Tester");
-
-        var str = string.Empty;
-
-        if (text != str)
-            Console.WriteLine(text);
-    }
-
+    private const string generatedDtoWithPropertyChanged =
+        "using System;\r\nusing System.ComponentModel;\r\nusing System.Runtime.CompilerServices;\r\nusing System.Runtime.Serialization;\r\n\r\nnamespace Tester;\r\n[DataContract]\r\npublic class TestDto : INotifyPropertyChanged\r\n{\r\n    public TestDto()\r\n    {\r\n    }\r\n\r\n    public TestDto(Initialize.Tests.Test obj)\r\n    {\r\n        _prop = obj.Prop;\r\n        _propNullable = obj.PropNullable;\r\n        _propString = obj.PropString;\r\n        _fieldNullable = obj.FieldNullable;\r\n    }\r\n\r\n    private int _prop;\r\n    [DataMember(Order = 0)]\r\n    public int Prop\r\n    {\r\n        get => _prop;\r\n        set\r\n        {\r\n            _prop = value;\r\n            RaisePropertyChanged();\r\n        }\r\n    }\r\n\r\n    private System.Nullable<int> _propNullable;\r\n    [DataMember(Order = 1)]\r\n    public System.Nullable<int> PropNullable\r\n    {\r\n        get => _propNullable;\r\n        set\r\n        {\r\n            _propNullable = value;\r\n            RaisePropertyChanged();\r\n        }\r\n    }\r\n\r\n    private string _propString;\r\n    [DataMember(Order = 2)]\r\n    public string PropString\r\n    {\r\n        get => _propString;\r\n        set\r\n        {\r\n            _propString = value;\r\n            RaisePropertyChanged();\r\n        }\r\n    }\r\n\r\n    private System.Nullable<int> _fieldNullable;\r\n    [DataMember(Order = 3)]\r\n    public System.Nullable<int> FieldNullable\r\n    {\r\n        get => _fieldNullable;\r\n        set\r\n        {\r\n            _fieldNullable = value;\r\n            RaisePropertyChanged();\r\n        }\r\n    }\r\n\r\n    public event PropertyChangedEventHandler PropertyChanged;\r\n    public void RaisePropertyChanged([CallerMemberName] string propertyName = null)\r\n    {\r\n        if (PropertyChanged != null)\r\n        {\r\n            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));\r\n        }\r\n    }\r\n}";
     private const string generatedDto =
         "using System;\r\nusing System.ComponentModel;\r\nusing System.Runtime.CompilerServices;\r\nusing System.Runtime.Serialization;\r\n\r\nnamespace Tester;\r\n[DataContract]\r\npublic class TestDto\r\n{\r\n    public TestDto()\r\n    {\r\n    }\r\n\r\n    public TestDto(Initialize.Tests.Test obj)\r\n    {\r\n        _prop = obj.Prop;\r\n        _propNullable = obj.PropNullable;\r\n        _propString = obj.PropString;\r\n        _fieldNullable = obj.FieldNullable;\r\n    }\r\n\r\n    private int _prop;\r\n    [DataMember(Order = 0)]\r\n    public int Prop\r\n    {\r\n        get => _prop;\r\n        set\r\n        {\r\n            _prop = value;\r\n        }\r\n    }\r\n\r\n    private System.Nullable<int> _propNullable;\r\n    [DataMember(Order = 1)]\r\n    public System.Nullable<int> PropNullable\r\n    {\r\n        get => _propNullable;\r\n        set\r\n        {\r\n            _propNullable = value;\r\n        }\r\n    }\r\n\r\n    private string _propString;\r\n    [DataMember(Order = 2)]\r\n    public string PropString\r\n    {\r\n        get => _propString;\r\n        set\r\n        {\r\n            _propString = value;\r\n        }\r\n    }\r\n\r\n    private System.Nullable<int> _fieldNullable;\r\n    [DataMember(Order = 3)]\r\n    public System.Nullable<int> FieldNullable\r\n    {\r\n        get => _fieldNullable;\r\n        set\r\n        {\r\n            _fieldNullable = value;\r\n        }\r\n    }\r\n}";
 }
