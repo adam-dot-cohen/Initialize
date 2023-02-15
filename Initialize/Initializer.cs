@@ -1,22 +1,22 @@
 ﻿using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace Initialize;
 public static class Initializer<T>
 {
     private static string _proxyTypeName;
-    private static Assembly _generatedAssembly;
-    private static AssemblyLoadContext _context;
     private static Type _proxyType;
-    internal delegate void Del(T obj);
-    internal static Del CacheDel;
+    private delegate void InitializeDelegate(T obj);
+    private static InitializeDelegate? CachedDelegate;
 
-    static Initializer()
-    => Compile();
+    static Initializer() => Compile();
 
     public static InitializerTemplate<T> Template { get; set; } = new();
 
@@ -27,30 +27,31 @@ public static class Initializer<T>
     /// <returns><seealso cref="Span{byte}"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Initialize(T obj)
-        => CacheDel(obj);
+        => CachedDelegate(obj);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void BuildDelegates()
     {
         var infos = _proxyType.GetMethod(nameof(Initialize));
-        CacheDel = infos.CreateDelegate<Del>();
+
+        CachedDelegate = infos!.CreateDelegate<InitializeDelegate>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Compile()
     {
-        _proxyTypeName = $"Initializer{typeof(T).Name}.Init{typeof(T).Name}";
+        _proxyTypeName =$"Initializer." + $"Initializer_{typeof(T).Name}";
 
         var result = Template.Generate();
 
         var references = new List<PortableExecutableReference> {
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System),
+            MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Console),
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Private_CoreLib),
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Runtime),
-            MetadataReference.CreateFromFile(typeof(Unsafe).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(Initializer<>).GetTypeInfo().Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(T).GetTypeInfo().Assembly.Location)};
+            MetadataReference.CreateFromFile(typeof(T).GetTypeInfo().Assembly.Location)
+        };
 
         var csharpSyntax = CSharpSyntaxTree.ParseText(result);
 
@@ -59,57 +60,83 @@ public static class Initializer<T>
 #endif
 
         var compilation = CSharpCompilation.Create(
-                $"{_proxyTypeName}_{DateTime.Now.ToFileTimeUtc()}",
-            new[] { CSharpSyntaxTree.ParseText(result) },
-            references,
-            new CSharpCompilationOptions(
+                assemblyName: $"{_proxyTypeName}_{DateTime.Now.ToFileTimeUtc()}", 
+                syntaxTrees: new[] { csharpSyntax })
+            .WithReferences(references)
+            .WithOptions(new CSharpCompilationOptions(
                 OutputKind.DynamicallyLinkedLibrary,
-                allowUnsafe: true,
-                optimizationLevel: OptimizationLevel.Release)
-        );
-        Emit(compilation);
+                allowUnsafe: true, optimizationLevel: OptimizationLevel.Release));
+
+        Emit(compilation, csharpSyntax);
+        
         BuildDelegates();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Emit(CSharpCompilation _compilation)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void Emit(CSharpCompilation _compilation, SyntaxTree syntax)
     {
-        if (CacheDel != null) return;
+        if (CachedDelegate != null) return;
         using (var ms = new MemoryStream())
         {
             var result = _compilation.Emit(ms);
-            if (!result.Success)
-            {
-                var compilationErrors = result.Diagnostics.Where(diagnostic =>
-                        diagnostic.IsWarningAsError ||
-                        diagnostic.Severity == DiagnosticSeverity.Error)
-                    .ToList();
-                if (compilationErrors.Any())
-                {
-                    var firstError = compilationErrors.First();
-                    var errorNumber = firstError.Id;
-                    var errorDescription = firstError.GetMessage();
-                    var firstErrorMessage = $"{errorNumber}: {errorDescription};";
-                    var exception = new Exception($"Compilation failed, first error is: {firstErrorMessage}");
-                    compilationErrors.ForEach(e => { if (!exception.Data.Contains(e.Id)) exception.Data.Add(e.Id, e.GetMessage()); });
-                    throw exception;
-                }
-            }
 
-            _context = new AssemblyLoadContext("Initializer", true);
+            InitializeCompilationException.ThrowIfEmitResultNullOrUnsuccessful(result, syntax);
 
             ms.Seek(0, SeekOrigin.Begin);
 
-            _generatedAssembly = _context.LoadFromStream(ms);
+#if NET5_0_OR_GREATER
+            var generatedAssembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+#else
+                var generatedAssembly = Assembly.Load(ms.ToArray());
+                
+#endif
+            _proxyType = generatedAssembly.GetType(_proxyTypeName);
 
-            _proxyType = _generatedAssembly.GetType(_proxyTypeName);
+            Span<byte> buffer = new byte[ms.Length];
+            ms.Seek(0, SeekOrigin.Begin);
+            ms.Read(buffer);
+            AppDomain.CurrentDomain.Load(buffer.ToArray());
         }
     }
 
-    internal class FrameworkAssemblyPaths
+    
+}
+internal class FrameworkAssemblyPaths
+{
+    public static string System_Console => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Console.dll");
+    public static string System => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.dll");
+    public static string System_Private_CoreLib => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Private.CoreLib.dll");
+    public static string System_Runtime_CompilerServices_Unsafe => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.CompilerServices.Unsafe.dll");
+    public static string System_Runtime => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.dll");
+}
+public class InitializeCompilationException : Exception
+{
+    public InitializeCompilationException(string message,  SyntaxTree syntaxString) : base(message)
     {
-        public static string System => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.dll");
-        public static string System_Runtime => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.dll");
-        public static string System_Private_CoreLib => Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Private.CoreLib.dll");
+        SyntaxTree = syntaxString;
+        SyntaxTreeText = syntaxString.GetRoot().NormalizeWhitespace().ToFullString();
+    }
+    public SyntaxTree SyntaxTree { get; }
+    public string SyntaxTreeText { get; set; }
+
+    public static void ThrowIfEmitResultNullOrUnsuccessful(EmitResult result, SyntaxTree syntaxTree)
+    {
+        if (!result.Success)
+        {
+            var compilationErrors = result.Diagnostics.Where(diagnostic =>
+                    diagnostic.IsWarningAsError ||
+                    diagnostic.Severity == DiagnosticSeverity.Error)
+                .ToList();
+            if (compilationErrors.Any())
+            {
+                var firstError = compilationErrors.First();
+                var errorNumber = firstError.Id;
+                var errorDescription = firstError.GetMessage();
+                var firstErrorMessage = $"{errorNumber}: {errorDescription};";
+                var exception = new InitializeCompilationException($"Compilation failed, first error is: { firstErrorMessage }", syntaxTree);
+                compilationErrors.ForEach(e => { if (!exception.Data.Contains(e.Id)) exception.Data.Add(e.Id, e.GetMessage()); });
+                throw exception;
+            }
+        }
     }
 }

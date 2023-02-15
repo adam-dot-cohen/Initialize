@@ -32,6 +32,24 @@ High performance automatic DTO mapper and properties initializer based on Roslyn
 	Mapper<Test, Test2>.Map(test, test2);
 	test2.Dump("Test2 Post Map");
 ```
-   
+
+## Mapper Benchmarks   
+```
+BenchmarkDotNet=v0.13.4, OS=Windows 11 (10.0.22621.1265)
+Intel Core i9-10980XE CPU 3.00GHz, 1 CPU, 36 logical and 18 physical cores
+.NET SDK=7.0.103
+  [Host]     : .NET 7.0.3 (7.0.323.6910), X64 RyuJIT AVX2
+  Job-DVEUFE : .NET 7.0.3 (7.0.323.6910), X64 RyuJIT AVX2
+
+Jit=RyuJit  Runtime=.NET 7.0  Arguments=/p:Optimize=true
+InvocationCount=1  LaunchCount=1  RunStrategy=Throughput
+UnrollFactor=1
+
+|           Method |     Mean |     Error | Allocated |
+|----------------- |---------:|----------:|----------:|
+| InitializeMapper | 2.178 us | 0.1041 us |     880 B |
+|       AutoMapper | 5.857 us | 0.3292 us |     880 B |
+```
+
 ## Feedback, Suggestions and Contributions
 Are all welcome!

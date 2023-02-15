@@ -12,22 +12,22 @@
     <Copyright>2023</Copyright>
     <Description>High performance automatic DTO mapper and properties initializer based on Roslyn dynamic code and compilation</Description>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/Hyperlnq/HyperSerializer</PackageProjectUrl>
-    <PackageTags>Resizable;Span{T};Memory{T};Buffer;High-Performance;c#;dotnet</PackageTags>
+    <PackageProjectUrl>https://github.com/adam-dot-cohen/Initialize</PackageProjectUrl>
+    <PackageTags>DTO mapper; Generator;AutoMapper;Initializer</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Initialize.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DelaySign>true</DelaySign>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RepositoryUrl>https://github.com/adam-dot-cohen/ResizableSpanWriter</RepositoryUrl>
-    <Version>0.0.2-alpha</Version>
+    <Version>0.2.1</Version>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PackageIcon>favicon.png</PackageIcon>
     <LangVersion>latest</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Title>High-Performance DTO auto initialier and property mapper</Title>
+    <Title>High-Performance auto DTO initialier and property mapper / deep copier</Title>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
     <WarningLevel>6</WarningLevel>
@@ -53,6 +53,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="System.CodeDom" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

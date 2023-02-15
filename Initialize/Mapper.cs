@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,13 +10,13 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Initialize;
 
 public static class Mapper<TFrom, TTo>
+    where TTo : new()
 {
     private static string _proxyTypeName;
     private static Assembly _generatedAssembly;
     private static AssemblyLoadContext _context;
     private static Type _proxyType;
-    internal delegate void Del(TFrom obj, TTo objFrom);
-    internal static Del CacheDel;
+    internal static Action<TFrom, TTo> CacheDel;
 
     static Mapper()
         => Compile();
@@ -30,11 +32,65 @@ public static class Mapper<TFrom, TTo>
     public static void Map(TFrom objFrom, TTo objTo)
         => CacheDel(objFrom, objTo);
 
+    /// <summary>
+    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    /// </summary>
+    /// <param name="obj">object or value type to be serialized</param>
+    /// <returns><seealso cref="Span{byte}"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TTo Map(TFrom objFrom)
+    {
+        var objTo = new TTo();
+        CacheDel(objFrom, objTo);
+        return objTo;
+    }
+
+    /// <summary>
+    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    /// </summary>
+    /// <param name="obj">object or value type to be serialized</param>
+    /// <returns><seealso cref="Span{byte}"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static List<TTo> Map(List<TFrom> objFrom)
+    {
+        List<TTo> array = new List<TTo>(new TTo[objFrom.Count]);
+        var toSpan = CollectionsMarshal.AsSpan(array);
+        int cnt = 0;
+
+        foreach(var item in CollectionsMarshal.AsSpan(objFrom))
+        {
+            var objTo = new TTo();
+            CacheDel(item, objTo);
+            //Initializer<TTo>.Initialize(objTo);
+            toSpan[cnt++] = objTo;
+        }
+
+        return array;
+    }
+    /// <summary>
+    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    /// </summary>
+    /// <param name="obj">object or value type to be serialized</param>
+    /// <returns><seealso cref="Span{byte}"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static List<TTo> MapFast(List<TFrom> objFrom)
+    {
+        var list = new List<TTo>();
+
+        foreach(var item in CollectionsMarshal.AsSpan(objFrom))
+        {
+            var objTo = new TTo();
+            CacheDel(item, objTo);
+            list.Add(objTo);
+        }
+
+        return list;
+    }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void BuildDelegates()
     {
         var infos = _proxyType.GetMethod(nameof(Map));
-        CacheDel = infos.CreateDelegate<Del>();
+        CacheDel = infos.CreateDelegate<Action<TFrom, TTo>>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,7 +153,7 @@ public static class Mapper<TFrom, TTo>
                 }
             }
 
-            _context = new AssemblyLoadContext("Mapper", true);
+            _context = new AssemblyLoadContext("Mapper", false);
 
             ms.Seek(0, SeekOrigin.Begin);
 
