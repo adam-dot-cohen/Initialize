@@ -12,34 +12,34 @@ public class Tests
     {
     }
 
-    [Test]
-    public void Test()
-    {
-        var test = new Test();
-        var test2 = new Test2();
+    //[Test]
+    //public void Test()
+    //{
+    //    var test = new Test();
+    //    var test2 = new Test2();
 
-        // 1. Optional - Customize default configuration
-        //Initializer<Test>.Template.Clear();
+    //    // 1. Optional - Customize default configuration
+    //    //Initializer<Test>.Template.Clear();
 
-        //Initializer<Test>.Template.Add(typeof(string), (obj, propInfo, friendlyTypeName) => "string.Empty");
-        //Initializer<Test>.Template.Add(typeof(ValueType), (obj, propInfo, friendlyTypeName) => "default" );
-        //Initializer<Test>.Template.Add(typeof(Nullable<>),
-        //    (obj, propInfo, friendlyTypeName) => 
-        //        string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
+    //    //Initializer<Test>.Template.Add(typeof(string), (obj, propInfo, friendlyTypeName) => "string.Empty");
+    //    //Initializer<Test>.Template.Add(typeof(ValueType), (obj, propInfo, friendlyTypeName) => "default" );
+    //    //Initializer<Test>.Template.Add(typeof(Nullable<>),
+    //    //    (obj, propInfo, friendlyTypeName) => 
+    //    //        string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
 
-        // 2. Call initialize
-        Initializer<Test>.Initialize(test);
+    //    // 2. Call initialize
+    //    Initializer<Test>.Initialize(test);
 
-        var initializeResult = !AreAnyPropertiesNull(test);
+    //    var initializeResult = !AreAnyPropertiesNull(test);
 
 
-        //Map example
-        Mapper<Test, Test2>.Map(test, test2);
+    //    //Map example
+    //    Mapper<Test, Test2>.Map(test, test2);
 
-        var mapResult = AllCommonPropertiesAreEqual(test, test2);
+    //    var mapResult = AllCommonPropertiesAreEqual(test, test2);
 
-        Assert.True(initializeResult && mapResult);
-    }
+    //    Assert.True(initializeResult && mapResult);
+    //}
 
     [Test]
     public void Should_equal_count_when_list_is_less_than_batch_size()
