@@ -1,6 +1,6 @@
 # Overview
 ![]()
-[![NuGet version (Initializer-Alpha)](https://img.shields.io/badge/nuget-v0.0.1-blue?style=flat-square)](https://www.nuget.org/packages/Initializer/)
+[![NuGet version (Initializer-Alpha)](https://img.shields.io/badge/nuget-v0.2.6-blue?style=flat-square)](https://www.nuget.org/packages/Initializer/)
 
 High performance automatic DTO mapper and properties initializer based on Roslyn dynamic code and compilation
 
