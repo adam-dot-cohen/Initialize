@@ -64,8 +64,18 @@ public class InitializerTemplate<T>
         sb.Append($"public static class Initializer_{type.Name}{{");
         sb.Append($"public static void Initialize({type.FullName.Replace("+", ".")} obj){{");
 
-        foreach (var prop in type.GetProperties())//.Where(g => g.PropertyType == typeof(TValue) && (exclude == null || !exclude.Any(q => q == g.Name))))
+        //var valueType = SyntaxForPropertyType.First(x => x.Key == typeof(ValueType));
+        //var nullableType = SyntaxForPropertyType
+        Span<PropertyInfo> properties =  type.GetProperties();
+
+        foreach (var prop in properties)////.Where(g => g.PropertyType == typeof(TValue) && (exclude == null || !exclude.Any(q => q == g.Name))))
         {
+            //var ptype = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+            
+            //var friendlyTypeName = SyntaxFactory
+            //    .ParseName(provider.GetTypeOutput(new CodeTypeReference(ptype)))
+            //    .NormalizeWhitespace().ToFullString();
+
             if (SyntaxForPropertyName.TryGetValue(prop.Name, out var nameFunc))
             {
                 sb.Append(string.Format(Syntax, prop.Name, SyntaxForPropertyName));

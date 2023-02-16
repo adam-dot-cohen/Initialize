@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Immutable;
 using System.Reflection;
 using Initialize.Generators;
 
@@ -17,27 +19,83 @@ public class Tests
         var test2 = new Test2();
 
         // 1. Optional - Customize default configuration
-        Initializer<Test>.Template.Clear();
+        //Initializer<Test>.Template.Clear();
 
-        Initializer<Test>.Template.Add(typeof(string),
-            (obj, propInfo, friendlyTypeName) => "string.Empty");
-        Initializer<Test>.Template.Add(typeof(Nullable<>),
-            (obj, propInfo, friendlyTypeName) => string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
-        Initializer<Test>.Template.Add(typeof(ValueType),
-            (obj, propInfo, friendlyTypeName) => "default" );
+        //Initializer<Test>.Template.Add(typeof(string), (obj, propInfo, friendlyTypeName) => "string.Empty");
+        //Initializer<Test>.Template.Add(typeof(ValueType), (obj, propInfo, friendlyTypeName) => "default" );
+        //Initializer<Test>.Template.Add(typeof(Nullable<>),
+        //    (obj, propInfo, friendlyTypeName) => 
+        //        string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
 
         // 2. Call initialize
         Initializer<Test>.Initialize(test);
 
         var initializeResult = !AreAnyPropertiesNull(test);
-	
+
 
         //Map example
         Mapper<Test, Test2>.Map(test, test2);
 
         var mapResult = AllCommonPropertiesAreEqual(test, test2);
-        
+
         Assert.True(initializeResult && mapResult);
+    }
+
+    [Test]
+    public void Should_equal_count_when_list_is_less_than_batch_size()
+    {
+        var items = Enumerable.Range(0, 1).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+
+        var result = Mapper<Test, Test2>.Map(items);
+
+        Assert.AreEqual(items.Count(), result.Count());
+    }
+
+    [Test]
+    public void Should_equal_count_when_list_is_greater_than_batch_size()
+    {
+        var items = Enumerable.Range(0, 101).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+
+        var result = Mapper<Test, Test2>.Map(items);
+
+        Assert.AreEqual(items.Count, result.Count());
+    }
+    [Test]
+    public void Should_equal_count_when_list_is_larg()
+    {
+        var items = Enumerable.Range(0, 100000).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+
+        var result = Mapper<Test, Test2>.Map2(items);
+
+        Assert.AreEqual(items.Count, result.Count());
+    }
+
+    [Test]
+    public void Should_equal_count_when_collections_are_not_null()
+    {
+        var objFrom = new Test3();
+        var multidimensionalArray = new int[1][] { new int[] { 1 } };
+        objFrom.ValueTypeArray = new int[1] { 1 };
+        objFrom.Array = new Test3[1] { new Test3 { Prop = 1, PropString = "1" } };
+        objFrom.Array2 = new Test2[] { new Test2 { Prop = 1, PropString = "1" } };
+        objFrom.ValueTypeList = new List<int> { };
+        objFrom.List = new List<Test3>() { new Test3 { Prop = 1, PropString = "1" } };
+        objFrom.ValueTypeHashSet = new HashSet<int> { };
+        objFrom.HashSet = new HashSet<Test3>() { new Test3 { Prop = 1, PropString = "1" } };
+        objFrom.ValueTypeDictionary = new Dictionary<int, int> { { 1, 1 } };
+        objFrom.Dictionary = new Dictionary<string, Test3> { { "1", new Test3 { Prop = 1, PropString = "1" } } };
+
+        var objTo = Mapper<Test3, Test3>.Map(objFrom);
+        
+        Assert.AreEqual(objFrom.ValueTypeArray?.Length, objTo.ValueTypeArray?.Length);
+        Assert.AreEqual(objFrom.Array?.Length, objTo.Array?.Length);
+        Assert.AreEqual(objFrom.Array2?.Length, objTo.Array2?.Length);
+        Assert.AreEqual(objFrom.ValueTypeList?.Count, objTo.ValueTypeList?.Count);
+        Assert.AreEqual(objFrom.List?.Count, objTo.List?.Count);
+        Assert.AreEqual(objFrom.ValueTypeDictionary?.Count, objTo.ValueTypeDictionary?.Count);
+        Assert.AreEqual(objFrom.Dictionary?.Count, objTo.Dictionary?.Count);
+//        Assert.AreEqual(objFrom.ValueTypeHashSet?.Count, objTo.ValueTypeHashSet?.Count);
+        Assert.AreEqual(objFrom.HashSet?.Count, objTo.HashSet?.Count);
     }
 
     [Test]
@@ -72,7 +130,9 @@ public class Tests
                      .Where(g => typeof(TObject2).GetProperties().Any(h => h.Name == g.Name) && (exclude == null || exclude.All(q => q != g.Name))))
         {
             var prop2 = typeof(TObject2).GetProperty(prop.Name);
-            if (!prop.GetValue(obj)!.Equals(prop2!.GetValue(value)))
+            var val1 = prop.GetValue(obj);
+            var val2 = prop2.GetValue(value);
+            if (val1 is null && val2 is null || val1.Equals(val1))
                 return false;
         }
         return true;
@@ -94,8 +154,27 @@ public class Test2
 }
 public class Test
 {
-    public int Prop { get; set; } 
+    public int Prop { get; set; }
     public int? PropNullable { get; set; }
     public string PropString { get; set; }
     public int? FieldNullable { get; set; }
+}
+
+public class Test3
+{
+    public int Prop { get; set; }
+    public int? PropNullable { get; set; }
+    public string PropString { get; set; }
+    public int? FieldNullable { get; set; }
+    public int[] ValueTypeArray { get; set; }
+    public Test3[] Array { get; set; }
+    public Test2[] Array2 { get; set; }
+    public List<int> ValueTypeList { get; set; }
+    public List<Test3> List { get; set; }
+    //public ImmutableArray<Test3> ImmutableArray { get; set; }
+    //public IReadOnlyCollection<Test3> ReadOnlyCollection { get; set; }
+    public Dictionary<int, int> ValueTypeDictionary { get; set; }
+    public Dictionary<string, Test3> Dictionary { get; set; }
+    public HashSet<int> ValueTypeHashSet {get;set;}
+    public HashSet<Test3> HashSet {get;set;}
 }

@@ -22,7 +22,7 @@ public class ChampionChallengerBenchmarks
 {
     private static readonly RecyclableMemoryStreamManager manager = new();
     private MapperA _autoMapper;
-    //private IEnumerable<Test> _testObjects;
+    private List<Test> _testObjects;
 
     public ChampionChallengerBenchmarks()
     {
@@ -34,7 +34,7 @@ public class ChampionChallengerBenchmarks
         //Initialize mapper
         Mapper<Test, Test2>.Map(testObj);
 
-        // _testObjects = Enumerable.Range(0, 100).Select(r => new Test() { PropString = r.ToString(), Prop = r });
+        _testObjects = Enumerable.Range(0, 10000).Select(r => new Test() { PropString = r.ToString(), Prop = r }).ToList();
     }
 
     private Test testObj = new Test()
@@ -65,14 +65,20 @@ public class ChampionChallengerBenchmarks
     //    mapper.Map(testObj, test2);
     //}
 
-    [Benchmark(Description = "InitializeMapper")]
+    [Benchmark(Description = "Mapper", Baseline = true)]
     public void InitializeMapper()
     {
         var test2 = new Test2();
 
         Mapper<Test, Test2>.Map(testObj, test2);
     }
+    [Benchmark(Description = "MapperNoDestObject")]
+    public void InitializeMapperNoVarPassed()
+    {
+        var test2 = new Test2();
 
+        var result = Mapper<Test, Test2>.Map(testObj);
+    }
     [Benchmark(Description = "AutoMapper")]
     public void AutoMapper()
     {
@@ -80,34 +86,13 @@ public class ChampionChallengerBenchmarks
 
         _autoMapper.Map(testObj, test2);
     }
+    [Benchmark(Description = "AutoMappeNoDestObject")]
+    public void AutoMapper2()
+    {
+        var test2 = new Test2();
 
-    //[Benchmark(Description = "InitializeMapper_100KCollection")]
-    //public void InitializeMapper100K()
-    //{
-    //    var test2 = new Test2();
-
-    //    var result = Mapper<Test, Test2>.Map(_testObjects);
-
-    //    Debug.Assert(result.Count == _testObjects.Count);   
-    //}
-    //[Benchmark(Description = "InitializeMapper_100KCollectionFast")]
-    //public void InitializeMapper100KFast()
-    //{
-    //    var test2 = new Test2();
-
-    //    var result = Mapper<Test, Test2>.MapFast(_testObjects);
-
-    //    Debug.Assert(result.Count == _testObjects.Count);
-    //}
-    //[Benchmark(Description = "AutoMapper_100KCollection")]
-    //public void AutoMapper100K()
-    //{
-    //    var test2 = new Test2();
-
-    //    var result = _autoMapper.Map<List<Test>>(_testObjects);
-
-    //    Debug.Assert(result.Count == _testObjects.ToList().Count);
-    //}
+        var result = _autoMapper.Map<Test>(testObj);
+    }
 }
 
 
