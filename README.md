@@ -1,8 +1,8 @@
 # Overview
 ![]()
-[![NuGet version (Initializer-Alpha)](https://img.shields.io/badge/nuget-v0.2.6-blue?style=flat-square)](https://www.nuget.org/packages/Initializer/)
+[![NuGet version (Initialize)](https://img.shields.io/badge/nuget-v0.2.6-blue?style=flat-square)](https://www.nuget.org/packages/Initialize/)
 
-High performance automatic DTO mapper and properties initializer based on Roslyn dynamic code and compilation
+High performance automatic object-to-object mapper for zero configuration property binding.
 
 # Example Usage
 ```csharp
