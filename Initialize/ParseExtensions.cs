@@ -10,24 +10,136 @@ namespace Initialize;
 
 public class ParseUTF8
 {
-    public string MemoryByteToString(int index) => $"{{0}} [{index}].Span.ToString()";
-    public string MemoryByteToStringNullIfEmpty(int index) => $"{{0}} [{index}].Span.ToStringNullIfEmpty()";
-    public string MemoryByteToIntNullable(int index) => $"{{0}} [{index}].Span.ToNullableInt()";
-    public string MemoryByteToInt(int index) => $"{{0}} [{index}].Span.ToInt()";
-    public string MemoryByteToLongNullable(int index) => $"{{0}} [{index}].Span.ToNullableLong()";
-    public string MemoryByteToLong(int index) => $"{{0}} [{index}].Span.ToLong()";
-    public string MemoryByteToDoubleNullable(int index) => $"{{0}} [{index}].Span.ToNullableDouble()";
-    public string MemoryByteToDouble(int index) => $"{{0}} [{index}].Span.ToDouble()";
-    public string MemoryByteToDateTimeNullable(int index) => $"{{0}} [{index}].Span.ToNullableDateTime()";
-    public string MemoryByteToDateTimeNullable(int index, string parseFormat) => $"{{0}} [{index}].Span.ToNullableDateTime({parseFormat})";
-    public string MemoryByteToDateTime(int index) => $"{{0}} [{index}].Span.ToDateTime()";
-    public string MemoryByteToTimeSpanNullable(int index) => $"{{0}} [{index}].Span.ToNullableTimeSpan()";
-    public string MemoryByteToTimeSpan(int index) => $"{{0}} [{index}].Span.ToTimeSpan()";
+    public string ToString(int index) => $"{{0}} [{index}].ToUtf8String()";
+    public string ToStringNullIfEmpty(int index) => $"{{0}} [{index}].ToStringNullIfEmpty()";
+    public string ToIntNullable(int index) => $"{{0}} [{index}].ToNullableInt()";
+    public string ToInt(int index) => $"{{0}} [{index}].ToInt()";
+    public string ToLongNullable(int index) => $"{{0}} [{index}].ToNullableLong()";
+    public string ToLong(int index) => $"{{0}} [{index}].ToLong()";
+    public string ToDoubleNullable(int index) => $"{{0}} [{index}].ToNullableDouble()";
+    public string ToDouble(int index) => $"{{0}} [{index}].ToDouble()";
+    public string ToDateTimeNullable(int index) => $"{{0}} [{index}].ToNullableDateTime()";
+    public string ToDateTimeNullable(int index, string parseFormat) => $"{{0}} [{index}].ToNullableDateTime({parseFormat})";
+    public string ToDateTime(int index) => $"{{0}} [{index}].ToDateTime()";
+    public string ToTimeSpanNullable(int index) => $"{{0}} [{index}].ToNullableTimeSpan()";
+    public string ToTimeSpan(int index) => $"{{0}} [{index}].ToTimeSpan()";
 }
 
-public static class ParseExtensions
+public static partial class ParseExtensions
 {
-    public static string ToString(this Span<byte> span)
+     public static string ToUtf8String(this Memory<byte> span)
+    {
+        return Encoding.UTF8.GetString(span.Span);
+    }
+
+    public static string ToStringNullIfEmpty(this Memory<byte> span)
+    {
+        if (span.Length > 0)
+            return Encoding.UTF8.GetString(span.Span);
+        return null;
+    }
+
+    public static double ToDouble(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out double value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static double? ToNullableDouble(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out double value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static int ToInt(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out int value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static int? ToNullableInt(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out int value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static long ToLong(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out long value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static long? ToNullableLong(this Memory<byte> span)
+    {
+        if (Utf8Parser.TryParse(span.Span, out long value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    ///// <summary>
+    ///// https://learn.microsoft.com/en-us/dotnet/api/system.buffers.text.utf8parser.tryparse?view=net-7.0#system-buffers-text-utf8parser-tryparse(system-readonlyspan((system-byte))-system-datetime@-system-int32@-system-char)
+    ///// </summary>
+    //public static DateTime? ToNullableDateTime(this Memory<byte> span)
+    //{
+    //    if (Utf8Parser.TryParse(span.Span, out DateTime value, out int bytesConsumed))
+    //        return value;
+    //    return null;
+    //}
+    
+    public static DateTime? ToNullableDateTime(this Memory<byte> span)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParse(dtString, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+    public static DateTime? ToNullableDateTime(this Memory<byte> span, string format)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+
+    public static DateTime ToDateTime(this Memory<byte> span, string format)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return default;
+    }
+
+    public static TimeSpan? ToNullableTimeSpan(this Memory<byte> span)
+    {
+        var dtString = span.ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return null;
+    }
+    public static TimeSpan ToTimeSpan(this Memory<byte> span)
+    {
+        var dtString = span.ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return default;
+    }
+    public static char? ToNullableChar(this Memory<byte> span)
+    {
+        var dtString = span.ToUtf8String();
+        if (Char.TryParse(dtString, out char value))
+            return value;
+        return null;
+    }
+}
+
+public static partial class ParseExtensions
+{
+    public static string ToUtf8String(this Span<byte> span)
     {
         return Encoding.UTF8.GetString(span);
     }
@@ -86,21 +198,21 @@ public static class ParseExtensions
     ///// </summary>
     //public static DateTime? ToNullableDateTime(this Span<byte> span)
     //{
-    //    if (Utf8Parser.TryParse(span, out DateTime value, out int bytesConsumed))
+    //    if (Utf8Parser.TryParse(span.Span, out DateTime value, out int bytesConsumed))
     //        return value;
     //    return null;
     //}
     
     public static DateTime? ToNullableDateTime(this Span<byte> span)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
         if (DateTime.TryParse(dtString, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return null;
     }
     public static DateTime? ToNullableDateTime(this Span<byte> span, string format)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
         if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return null;
@@ -108,7 +220,7 @@ public static class ParseExtensions
 
     public static DateTime ToDateTime(this Span<byte> span, string format)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
         if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return default;
@@ -116,21 +228,132 @@ public static class ParseExtensions
 
     public static TimeSpan? ToNullableTimeSpan(this Span<byte> span)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
         if (TimeSpan.TryParse(dtString, out var d))
             return d;
         return null;
     }
     public static TimeSpan ToTimeSpan(this Span<byte> span)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
         if (TimeSpan.TryParse(dtString, out var d))
             return d;
         return default;
     }
     public static char? ToNullableChar(this Span<byte> span)
     {
-        var dtString = Encoding.UTF8.GetString(span);
+        var dtString = span.ToUtf8String();
+        if (Char.TryParse(dtString, out char value))
+            return value;
+        return null;
+    }
+}
+public static partial class ParseExtensions
+{
+    public static string ToUtf8String(this byte[] span)
+    {
+        return Encoding.UTF8.GetString(span);
+    }
+
+    public static string ToStringNullIfEmpty(this byte[] span)
+    {
+        if (span.Length > 0)
+            return Encoding.UTF8.GetString(span);
+        return null;
+    }
+
+    public static double ToDouble(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out double value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static double? ToNullableDouble(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out double value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static int ToInt(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out int value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static int? ToNullableInt(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out int value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static long ToLong(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out long value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static long? ToNullableLong(this byte[] span)
+    {
+        if (Utf8Parser.TryParse(span, out long value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    ///// <summary>
+    ///// https://learn.microsoft.com/en-us/dotnet/api/system.buffers.text.utf8parser.tryparse?view=net-7.0#system-buffers-text-utf8parser-tryparse(system-readonlyspan((system-byte))-system-datetime@-system-int32@-system-char)
+    ///// </summary>
+    //public static DateTime? ToNullableDateTime(this byte[] span)
+    //{
+    //    if (Utf8Parser.TryParse(span.Span, out DateTime value, out int bytesConsumed))
+    //        return value;
+    //    return null;
+    //}
+    
+    public static DateTime? ToNullableDateTime(this byte[] span)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParse(dtString, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+    public static DateTime? ToNullableDateTime(this byte[] span, string format)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+
+    public static DateTime ToDateTime(this byte[] span, string format)
+    {
+        var dtString = span.ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return default;
+    }
+
+    public static TimeSpan? ToNullableTimeSpan(this byte[] span)
+    {
+        var dtString = span.ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return null;
+    }
+    public static TimeSpan ToTimeSpan(this byte[] span)
+    {
+        var dtString = span.ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return default;
+    }
+    public static char? ToNullableChar(this byte[] span)
+    {
+        var dtString = span.ToUtf8String();
         if (Char.TryParse(dtString, out char value))
             return value;
         return null;

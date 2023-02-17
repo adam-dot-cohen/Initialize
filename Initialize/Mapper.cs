@@ -1,116 +1,159 @@
 ﻿using System.Buffers;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Initialize;
-
+/// <summary>
+/// Maps from <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.
+/// </summary>
+/// <typeparam name="TFrom"></typeparam>
+/// <typeparam name="TTo"></typeparam>
 public static class Mapper<TFrom, TTo>
 {
     private static string _proxyTypeName;
     private static Assembly _generatedAssembly;
     private static AssemblyLoadContext _context;
     private static Type _proxyType;
-    private delegate void MapperDelegate(TFrom from, TTo to);
-    private static MapperDelegate CacheDel;
+    private static Action<TFrom, TTo> _mapFromTo;
+    private static Func<TFrom, TTo> _mapFrom;
 
-    static Mapper()
-        => Compile();
+    static Mapper() => Compile();
     
     /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    /// Maps caller supplied <typeparamref name="TFrom"/> to caller supplied <typeparamref name="TTo"/> object.
     /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
+    /// <param name="objFrom">Source <typeparamref name="TFrom"/> object</param>
+    /// <param name="objTo">Destination <typeparamref name="TTo"/> object</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Map(TFrom objFrom, TTo objTo)
-        => CacheDel(objFrom, objTo);
+    public static void Map(TFrom objFrom, TTo objTo) => _mapFromTo(objFrom, objTo);
 
     /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    /// Maps caller supplied <typeparamref name="TFrom"/> to returned <typeparamref name="TTo"/> object.
     /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
+    /// <param name="objFrom">Source <typeparamref name="TFrom"/> object</param>
+    /// <returns name="objTo">A <typeparamref name="TTo"/> object with hydrated properties.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TTo Map(TFrom objFrom)
+    public static TTo Map(TFrom objFrom) => _mapFrom(objFrom);
+
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public static IEnumerable<TTo> MapEnumerable(List<TFrom> objFrom)
+    //{
+    //    var span = objFrom.ToArray();
+    //    TTo[] spanTo = ArrayPool<TTo>.Shared.Rent(objFrom.Count);
+    //    var cnt = objFrom.Count;
+    //    var current = 0;
+
+    //    foreach (var item in CollectionsMarshal.AsSpan(objFrom))
+    //        spanTo[current++] = Map(item);
+    //    //for (int i = 0; i < cnt; i++)
+    //    //    spanTo[i] =  Map(span[i]);
+        
+    //    ArrayPool<TTo>.Shared.Return(spanTo);
+
+    //    return spanTo;
+    //}
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public static IEnumerable<TTo> MapEnumerable(IList<TFrom> objFrom)
+    //{
+    //    var span = objFrom.ToArray();
+    //    TTo[] spanTo = new TTo[span.Length];
+    //    var cnt = span.Length;
+
+    //    for (int i = 0; i < cnt; i++)
+    //        spanTo[i] =  Map(span[i]);
+        
+    //    //ArrayPool<TTo>.Shared.Return(spanTo);
+
+    //    return spanTo;
+    //}
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public static IEnumerable<TTo> MapEnumerable(TFrom[] objFrom)
+    //{
+    //    var span = objFrom;
+    //    TTo[] spanTo = new TTo[span.Length];
+    //    var cnt = span.Length;
+
+    //    for (int i = 0; i < cnt; i++)
+    //        spanTo[i] =  Map(span[i]);
+        
+    //    //ArrayPool<TTo>.Shared.Return(spanTo);
+
+    //    return spanTo;
+    //}
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<TTo> MapEnumerable(IEnumerable<TFrom> objFrom)
     {
-        var objTo = Activator.CreateInstance<TTo>();
-        CacheDel(objFrom, objTo);
-        return objTo;
+        //if (objFrom is TFrom[] array)
+        //{
+        //    return MapEnumerable(array);
+        //}
+        
+        //if (objFrom is IList<TFrom> iList)
+        //{
+        //    if (iList is List<TFrom> list)
+        //    {
+        //        return MapEnumerable(list);
+        //    }
+        //    return MapEnumerable(iList);
+        //}
+
+        var span = objFrom.ToArray().AsSpan();
+        var spanTo = ArrayPool<TTo>.Shared.Rent(span.Length);
+        var cnt = span.Length;
+
+        for (int i = 0; i < cnt; i++)
+            spanTo[i] =  Map(span[i]);
+        
+        ArrayPool<TTo>.Shared.Return(spanTo);
+
+        return spanTo;
     }
+ 
+    public static IEnumerable<TTo> MapArray(IEnumerable<TFrom> objFrom)
+    {
+        int cnt = 0, current = 0;
+        var span = objFrom.ToArray().AsSpan();
+        Span<TTo> spanTo = new TTo[span.Length];// ArrayPool<TTo>.Shared.Rent(span.Length);
 
-    /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
-    /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //public static KeyValuePair<TKey, TValue> Map<TKey, TValue>(KeyValuePair<TKey, TValue> objFrom)
-    //{
-    //    KeyValuePair<TKey, TValue> kvPair = new ();
-    //    Mapper<KeyValuePair<TKey, TValue>
-    //    return objTo;
-    //}
+        for (int i = 0; i < cnt; i++)
+        {
+            spanTo[i] = Map(span[i]);
+        }
 
-    /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
-    /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //public static List<TTo> Map(IList<TFrom> objFrom)
-    //{
-    //    var pool = ArrayPool<TTo>.Shared;
-    //    int cnt = 0, cntTotal = 0, size = 100;
-    //    var list = new List<TTo>(objFrom.Count);
-    //    var array = pool.Rent(size);
+        //ArrayPool<TTo>.Shared.Return(spanTo);
+        
+        return spanTo.ToArray();// Map(objFrom.ToList());
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<TTo> MapArrayInline(IEnumerable<TFrom> objFrom)
+    {
+        int cnt = 0, current = 0;
+        var span = objFrom.ToArray();
+        TTo[] spanTo = ArrayPool<TTo>.Shared.Rent(span.Length);
+        for (int i = 0; i < cnt; i++)
+            spanTo[i] =  Map(span[i]);
+        
+        ArrayPool<TTo>.Shared.Return(spanTo);
 
-    //    while (cntTotal < objFrom.Count)
-    //    {
-    //        while (cnt < size)
-    //        {
-    //            var objTo = new TTo();
-    //            CacheDel(objFrom[cnt], objTo);
+        return spanTo;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    public static IEnumerable<TTo> MapArrayOpt(IEnumerable<TFrom> objFrom)
+    {
+        int cnt = 0, current = 0;
+        var span = objFrom.ToArray().AsSpan();
+        TTo[] spanTo = ArrayPool<TTo>.Shared.Rent(span.Length);
+        for (int i = 0; i < cnt; i++)
+            spanTo[i] =  Map(span[i]);
+        
+        ArrayPool<TTo>.Shared.Return(spanTo);
 
-    //            array[cnt] = objTo;
-    //            cnt++;
-    //            cntTotal++;
-    //        }
-    //        cnt = 0;
-    //        list.AddRange(array);
-    //        pool.Return(array);
-    //        array = pool.Rent(size);
-    //    }
-
-    //    return list;
-    //}
-    /// <summary>
-    ///// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
-    ///// </summary>
-    ///// <param name="obj">object or value type to be serialized</param>
-    ///// <returns><seealso cref="Span{byte}"/></returns>
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //public static IEnumerable<TTo> Map(IEnumerable<TFrom> objFrom)
-    //{
-    //    int cnt = 0, cntTotal = 0, size = 100;
-    //    Span<TFrom> spFrom = objFrom.ToArray();
-    //    var list = new TTo[spFrom.Length];
-    //    Span<TTo> spTo = list;
-
-    //    while (cnt < spFrom.Length)
-    //    {
-    //            spTo[cnt] = Map(spFrom[cnt]);
-    //            cnt++;
-    //    }
-
-    //    return list;// Map(objFrom.ToList());
-    //}
+        return spanTo;// Map(objFrom.ToList());
+    }
     ///// <summary>
     ///// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
     ///// </summary>
@@ -142,7 +185,7 @@ public static class Mapper<TFrom, TTo>
     //    //        array = pool.Rent(size);
     //    //    }
     //    //    var objTo = new TTo();
-    //    //    CacheDel(from[i], objTo);
+    //    //    MapFromTo(from[i], objTo);
 
     //    //    array[cnt] = objTo;
     //    //    cnt++;
@@ -159,8 +202,19 @@ public static class Mapper<TFrom, TTo>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void BuildDelegates()
     {
-        var infos = _proxyType.GetMethod(nameof(Map));
-        CacheDel = infos.CreateDelegate<MapperDelegate>();
+        var methodInfo = _proxyType.GetMethod(
+            name: nameof(Map), 
+            bindingAttr: BindingFlags.Static | BindingFlags.InvokeMethod | BindingFlags.Public, 
+            types: new []{ typeof(TFrom), typeof(TTo)});
+        
+        _mapFromTo = methodInfo.CreateDelegate<Action<TFrom, TTo>>();
+
+        methodInfo = _proxyType.GetMethod(
+            name: nameof(Map), 
+            bindingAttr: BindingFlags.Static | BindingFlags.InvokeMethod | BindingFlags.Public, 
+            types: new []{ typeof(TFrom)});
+        
+        _mapFrom = methodInfo.CreateDelegate<Func<TFrom, TTo>>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,7 +265,7 @@ public static class Mapper<TFrom, TTo>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Emit(CSharpCompilation _compilation)
     {
-        if (CacheDel != null) return;
+        if (_mapFromTo != null) return;
         using (var ms = new MemoryStream())
         {
             var result = _compilation.Emit(ms);
