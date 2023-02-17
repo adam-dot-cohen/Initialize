@@ -22,9 +22,7 @@ public static class Mapper<TFrom, TTo>
 
     static Mapper()
         => Compile();
-
-    public static MapperTemplate<TFrom, TTo> Template { get; set; } = new();
-
+    
     /// <summary>
     /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
     /// </summary>
@@ -93,71 +91,71 @@ public static class Mapper<TFrom, TTo>
     //    return list;
     //}
     /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
-    /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerable<TTo> Map(IEnumerable<TFrom> objFrom)
-    {
-        int cnt = 0, cntTotal = 0, size = 100;
-        Span<TFrom> spFrom = objFrom.ToArray();
-        var list = new TTo[spFrom.Length];
-        Span<TTo> spTo = list;
+    ///// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    ///// </summary>
+    ///// <param name="obj">object or value type to be serialized</param>
+    ///// <returns><seealso cref="Span{byte}"/></returns>
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public static IEnumerable<TTo> Map(IEnumerable<TFrom> objFrom)
+    //{
+    //    int cnt = 0, cntTotal = 0, size = 100;
+    //    Span<TFrom> spFrom = objFrom.ToArray();
+    //    var list = new TTo[spFrom.Length];
+    //    Span<TTo> spTo = list;
 
-        while (cnt < spFrom.Length)
-        {
-                spTo[cnt] = Map(spFrom[cnt]);
-                cnt++;
-        }
+    //    while (cnt < spFrom.Length)
+    //    {
+    //            spTo[cnt] = Map(spFrom[cnt]);
+    //            cnt++;
+    //    }
 
-        return list;// Map(objFrom.ToList());
-    }
-    /// <summary>
-    /// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
-    /// </summary>
-    /// <param name="obj">object or value type to be serialized</param>
-    /// <returns><seealso cref="Span{byte}"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerable<TTo> Map2(IEnumerable<TFrom> objFrom)
-    {
-        var pool = ArrayPool<TTo>.Shared;
-        int cnt = 0, size = 100;
-        //var from = objFrom.ToArray();
-        var list = new List<TTo>();
-        //var array = pool.Rent(size);
-        //MemoryMarshal.Cast<long, Vector<long>>(Values);
-        var from = CollectionsMarshal.AsSpan(objFrom.ToList());
+    //    return list;// Map(objFrom.ToList());
+    //}
+    ///// <summary>
+    ///// Initiaze properties on <typeparam name="T"></typeparam> to non-null values.
+    ///// </summary>
+    ///// <param name="obj">object or value type to be serialized</param>
+    ///// <returns><seealso cref="Span{byte}"/></returns>
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //public static IEnumerable<TTo> Map2(IEnumerable<TFrom> objFrom)
+    //{
+    //    var pool = ArrayPool<TTo>.Shared;
+    //    int cnt = 0, size = 100;
+    //    //var from = objFrom.ToArray();
+    //    var list = new List<TTo>();
+    //    //var array = pool.Rent(size);
+    //    //MemoryMarshal.Cast<long, Vector<long>>(Values);
+    //    var from = CollectionsMarshal.AsSpan(objFrom.ToList());
 
-        foreach (var item in from)
-        {
-            list.Add(Map(item));
-        }
+    //    foreach (var item in from)
+    //    {
+    //        list.Add(Map(item));
+    //    }
 
-        //for (int i = 0; i < from.Length; i++)
-        //{
-        //    if (cnt == size)
-        //    {
-        //        cnt = 0;
-        //        list.AddRange(array[..size]);
-        //        pool.Return(array);
-        //        array = pool.Rent(size);
-        //    }
-        //    var objTo = new TTo();
-        //    CacheDel(from[i], objTo);
+    //    //for (int i = 0; i < from.Length; i++)
+    //    //{
+    //    //    if (cnt == size)
+    //    //    {
+    //    //        cnt = 0;
+    //    //        list.AddRange(array[..size]);
+    //    //        pool.Return(array);
+    //    //        array = pool.Rent(size);
+    //    //    }
+    //    //    var objTo = new TTo();
+    //    //    CacheDel(from[i], objTo);
 
-        //    array[cnt] = objTo;
-        //    cnt++;
-        //}
+    //    //    array[cnt] = objTo;
+    //    //    cnt++;
+    //    //}
 
-        //if (cnt > 0)
-        //{
-        //    list.AddRange(array[..cnt]);
-        //    pool.Return(array);
-        //}
+    //    //if (cnt > 0)
+    //    //{
+    //    //    list.AddRange(array[..cnt]);
+    //    //    pool.Return(array);
+    //    //}
 
-        return list;
-    }
+    //    return list;
+    //}
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void BuildDelegates()
     {
@@ -168,9 +166,10 @@ public static class Mapper<TFrom, TTo>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Compile()
     {
-        _proxyTypeName = $"Mapper{typeof(TFrom).Name}.Map{typeof(TFrom).Name}";
 
-        var result = Template.Generate();
+        var result = MapperConfiguration<TFrom, TTo>.Template.Generate();
+
+        _proxyTypeName = MapperConfiguration<TFrom, TTo>.Template.FullName;
 
         var references = new List<PortableExecutableReference> {
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System),
@@ -178,11 +177,13 @@ public static class Mapper<TFrom, TTo>
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Runtime),
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Collections),
             MetadataReference.CreateFromFile(typeof(Unsafe).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(System.Text.Encoding).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(List<>).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Dictionary<,>).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Initializer<>).GetTypeInfo().Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(TFrom).GetTypeInfo().Assembly.Location)};
+            MetadataReference.CreateFromFile(typeof(TFrom).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(TTo).GetTypeInfo().Assembly.Location) };
         
         references.AddRange(typeof(TFrom).GetProperties().Select(r=>MetadataReference.CreateFromFile(r.PropertyType.Assembly.Location)));
 
