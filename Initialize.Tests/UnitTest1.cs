@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -51,7 +52,7 @@ public class Tests
     //[Test]
     //public void Should_equal_count_when_list_is_less_than_batch_size()
     //{
-    //    var items = Enumerable.Range(0, 1).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+    //    var items = Enumerable.Range(0, 1).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
 
     //    var result = Mapper<Test, Test2>.Map(items);
 
@@ -61,7 +62,7 @@ public class Tests
     //[Test]
     //public void Should_equal_count_when_list_is_greater_than_batch_size()
     //{
-    //    var items = Enumerable.Range(0, 101).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+    //    var items = Enumerable.Range(0, 101).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
 
     //    var result = Mapper<Test, Test2>.Map(items);
 
@@ -70,7 +71,7 @@ public class Tests
     //[Test]
     //public void Should_equal_count_when_list_is_larg()
     //{
-    //    var items = Enumerable.Range(0, 100000).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
+    //    var items = Enumerable.Range(0, 100000).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
 
     //    var result = Mapper<Test, Test2>.Map2(items);
 
@@ -79,19 +80,20 @@ public class Tests
     [Test]
     public void Should_equal_with_manual_config()
     {
-
-        MapperConfiguration<Test, Test3>
+        MapperConfiguration<Test, Test2>
             .Configure(x => x
                 .For(tLeft => tLeft.PropString, tRight => tRight.PropString)
+                .For(tLeft => tLeft.FieldNullable, tRight => tRight.FieldNullable)
                 .For(tLeft => tLeft.FieldNullable, tRight => tRight.FieldNullable)
             );
 
         var obj = new Test();
+        var objTo = new Test2();
         obj.PropString = "1";
 
-        var result = Mapper<Test, Test2>.Map(obj);
+        Mapper<Test, Test2>.Map(obj, objTo);
 
-        Assert.That(result.PropString, Is.EqualTo(obj.PropString));
+        Assert.That(objTo.PropString, Is.EqualTo(obj.PropString));
     }
 
     [Test]
@@ -123,7 +125,7 @@ public class Tests
     }
 
     [Test]
-    public void Should_equal_with_manual_config_with_indexer()
+    public void Should_equal_after_parse_utf8_with_manual_config()
     {
         Memory<byte>[] bytes = { 
             Encoding.UTF8.GetBytes(DateTime.Now.ToString()), 
@@ -153,6 +155,43 @@ public class Tests
 
         // equality values
         var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes[0].Span));
+        var equalToInt = int.Parse(Encoding.UTF8.GetString(bytes[1].Span));
+        var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes[3].Span));
+        var equalToString = Encoding.UTF8.GetString(bytes[4].Span);
+
+        // equality tests
+        Assert.That(result.PropDateTimeNullable, Is.EqualTo(equalToDt));
+        Assert.That(result.Prop, Is.EqualTo(equalToInt));
+        Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
+        Assert.That(result.PropString, Is.EqualTo(equalToString));
+    }
+    [Test]
+    public void Should_equal_after_ParseUTF8_from_MemoryByte()
+    {
+        var dtBytes = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
+        Memory<byte>[] bytes = { dtBytes, "8"u8.ToArray(), ""u8.ToArray(), "1.0"u8.ToArray(), "hello"u8.ToArray() };
+
+        int indexOffset = 0;
+        MapperConfiguration<Memory<byte>[], ParseTest>
+            .Configure(x => x
+                // index 0
+                .ParseFor(t => t.PropDateTimeNullable,
+                    parse => parse.ToDateTimeNullable)
+                // index 1
+                .ParseFor(t => t.Prop,
+                    parse => parse.ToInt)
+                // index 3 - skipping index 2
+                .ParseFor(t => t.PropDouble,
+                        parse => parse.ToDoubleNullable, ++indexOffset)
+                // index 4
+                .ParseFor(t => t.PropString,
+                        parse => parse.ToStringNullIfEmpty, indexOffset)
+            );
+
+        var result = Mapper<Memory<byte>[], ParseTest>.Map(bytes);
+
+        // equality values
+        var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes[0].Span));
         var equalToInt = int.Parse(Encoding.UTF8.GetString("8"u8.ToArray()));
         var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes[3].Span));
         var equalToString = Encoding.UTF8.GetString(bytes[4].Span);
@@ -164,35 +203,35 @@ public class Tests
         Assert.That(result.PropString, Is.EqualTo(equalToString));
     }
     [Test]
-    public void Should_equal_with_manual_config_with_indexer_from_ParseUT8()
+    public void Should_equal_after_ParseUTF8_from_ByteArray()
     {
         var dtBytes = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
-        Memory<byte>[] bytes = { dtBytes, "8"u8.ToArray(), ""u8.ToArray(), "1.0"u8.ToArray(), "hello"u8.ToArray() };
+        byte[][] bytes = { dtBytes, "8"u8.ToArray(), ""u8.ToArray(), "1.0"u8.ToArray(), "hello"u8.ToArray() };
 
         int indexOffset = 0;
-        MapperConfiguration<Memory<byte>[], ParseTest>
+        MapperConfiguration<byte[][], ParseTest>
             .Configure(x => x
                 // index 0
                 .ParseFor(t => t.PropDateTimeNullable,
-                    parse => parse.MemoryByteToDateTimeNullable)
+                    parse => parse.ToDateTimeNullable)
                 // index 1
                 .ParseFor(t => t.Prop,
-                    parse => parse.MemoryByteToInt)
+                    parse => parse.ToInt)
                 // index 3 - skipping index 2
                 .ParseFor(t => t.PropDouble,
-                        parse => parse.MemoryByteToDoubleNullable, ++indexOffset)
+                    parse => parse.ToDoubleNullable, ++indexOffset)
                 // index 4
                 .ParseFor(t => t.PropString,
-                        parse => parse.MemoryByteToStringNullIfEmpty, indexOffset)
+                    parse => parse.ToStringNullIfEmpty, indexOffset)
             );
 
-        var result = Mapper<Memory<byte>[], ParseTest>.Map(bytes);
+        var result = Mapper<byte[][], ParseTest>.Map(bytes);
 
         // equality values
-        var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes[0].Span));
-        var equalToInt = int.Parse(Encoding.UTF8.GetString("8"u8.ToArray()));
-        var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes[3].Span));
-        var equalToString = Encoding.UTF8.GetString(bytes[4].Span);
+        var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes[0]));
+        var equalToInt = int.Parse(Encoding.UTF8.GetString(bytes[1]));
+        var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes[3]));
+        var equalToString = Encoding.UTF8.GetString(bytes[4]);
 
         // equality tests
         Assert.That(result.PropDateTimeNullable, Is.EqualTo(equalToDt));
@@ -256,7 +295,6 @@ public class Test2
 public class ParseTest
 {
     public int Prop { get; set; }
-    public int? PropNullable { get; set; }
     public string PropString { get; set; }
     public DateTime? PropDateTimeNullable { get; set; }
     public double? PropDouble { get; set; }

@@ -23,6 +23,8 @@ public abstract class MapperTemplateBase<TFrom, TTo> : IMapperTemplate<TFrom, TT
     CSharpCodeProvider provider = new ();
     private string _namespace;
     private string _className;
+    protected  const string SyntaxVarFrom = "objFrom";
+    protected const string SyntaxVarTo = "objTo";
 
     protected MapperTemplateBase()
     {
@@ -37,30 +39,55 @@ public abstract class MapperTemplateBase<TFrom, TTo> : IMapperTemplate<TFrom, TT
     {
         var type = typeof(TFrom);
         var typeTo = typeof(TTo);
-        
+        var syntaxTypeFrom = GetTypeSyntax(type);
+        var syntaxTypeTo = GetTypeSyntax(typeTo);
         var namespaceFrom = GetNamespace(type);
         var namespaceTo = GetNamespace(typeTo);
         var usingFrom = string.IsNullOrWhiteSpace(namespaceFrom) ? string.Empty : $"using {namespaceFrom};";
         var usingTo = string.IsNullOrWhiteSpace(namespaceTo) ? string.Empty :$"using {namespaceTo};";
-
+        var syntaxUsing = namespaceFrom == namespaceTo ? usingFrom : usingFrom + usingTo;
         var sb = new StringBuilder();
-        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Linq;using System.Text;using Initialize;{usingFrom}{usingTo}");
+
+        GenerateBody(out var bodySyntax);
+
+        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Runtime.CompilerServices;using System.Linq;using System.Text;using Initialize;{syntaxUsing}");
+        
         sb.Append($"namespace {_namespace}{{");
-        sb.Append($"public static class {_className}{{");
-        sb.Append($"public static void Map({GetTypeSyntax(type)} objFrom, {GetTypeSyntax(typeTo)} objTo){{");
-
-        var bodySyntax = new StringBuilder();
         
-        GenerateBody(bodySyntax);
+            sb.Append($"public static class {_className}{{");
         
-        sb.Append(bodySyntax.ToString());
+                    #region public static void Map(objFrom, objTo)
+                    sb.Append("[MethodImpl(MethodImplOptions.AggressiveInlining)]");;
 
-        sb.Append($"}}");
-        sb.Append($"}}}}");
+                    sb.Append($"public static void Map({syntaxTypeFrom} {SyntaxVarFrom}, {syntaxTypeTo} {SyntaxVarTo}){{");
+                        
+                        sb.Append(bodySyntax.ToString());
+
+                    sb.Append($"}}");
+                    #endregion
+
+                    #region public static TTo Map(objFrom)
+                    sb.Append("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+                    
+                    sb.Append($"public static {syntaxTypeTo} Map({syntaxTypeFrom} {SyntaxVarFrom}){{");
+                    
+                        sb.Append($"var {SyntaxVarTo} = new {syntaxTypeTo}();");
+                        
+                        sb.Append(bodySyntax);
+                        
+                        sb.Append($"return {SyntaxVarTo};");
+
+                    sb.Append($"}}");
+                    #endregion
+            
+            sb.Append($"}}"); // end class
+
+        sb.Append($"}}"); // end namespace
+
         return sb.ToString();
     }
 
-    protected abstract void GenerateBody(StringBuilder syntaxBuilder);
+    protected abstract void GenerateBody(out StringBuilder syntaxBuilder);
 
     protected string GetPropertyName<TSource, TProperty>(Expression<Func<TSource, TProperty>> propertyExpression)
         => (propertyExpression.Body as MemberExpression).Member.Name;

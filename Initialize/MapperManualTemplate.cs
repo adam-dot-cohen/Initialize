@@ -6,28 +6,26 @@ namespace Initialize;
 
 public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 {
-    const string SyntaxPropertyBind = "objTo.{0} = objFrom.{1};";
-    const string SyntaxPropertyAssign = "objTo.{0} = {1};";
-    const string SyntaxFrom = "objFrom";
-
-    StringBuilder _maps = new StringBuilder();
+    private static readonly string SyntaxPropertyBind = $"{SyntaxVarTo}.{{0}} = {SyntaxVarFrom}.{{1}};";
+    private static readonly string SyntaxPropertyAssign = $"{SyntaxVarTo}.{{0}} = {{1}};";
+    private readonly StringBuilder _syntaxBuilder = new ();
 
     public MapperManualTemplate<TFrom, TTo> For<TProperty>(Expression<Func<TTo, TProperty>> propTo, Expression<Func<TFrom, TProperty>> propFrom)
     {
         var fromName = GetPropertyName(propFrom);
         var toName = GetPropertyName(propTo);
 
-        _maps.AppendFormat(SyntaxPropertyBind , toName, fromName);
+        _syntaxBuilder.AppendFormat(SyntaxPropertyBind , toName, fromName);
 
         return this;
     }
 
     private static int index = 0;
-    public MapperManualTemplate<TFrom, TTo> AddMap<TProperty>(Expression<Func<TTo, TProperty>> propTo, string rightSideOfAssignment)
+    public MapperManualTemplate<TFrom, TTo> For<TProperty>(Expression<Func<TTo, TProperty>> propTo, string rightSideOfAssignment)
     {
         var toName = GetPropertyName(propTo);
 
-        _maps.AppendFormat(SyntaxPropertyAssign, toName, rightSideOfAssignment);
+        _syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightSideOfAssignment);
 
         return this;
     }
@@ -38,9 +36,9 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
         var toName = GetPropertyName(propTo);
         
-        var rightStr = string.Format(rightSideAssignment, SyntaxFrom, indexOffset + index++);
+        var rightStr = string.Format(rightSideAssignment, SyntaxVarFrom, indexOffset + index++);
 
-        _maps.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
+        _syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
 
         return this;
     }
@@ -55,9 +53,9 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
         var right = rightSideOfAssignment(parser);
         
-        var rightStr = string.Format(right(indexOffset + index++), SyntaxFrom);
+        var rightStr = string.Format(right(indexOffset + index++), SyntaxVarFrom);
 
-        _maps.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
+        _syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
 
         return this;
     }
@@ -72,12 +70,12 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
         var right = rightSideOfAssignment(parser);
         
-        var rightStr = string.Format(right(indexOffset + index++, parseFormat), SyntaxFrom);
+        var rightStr = string.Format(right(indexOffset + index++, parseFormat), SyntaxVarFrom);
 
-        _maps.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
+        _syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
 
         return this;
     }
-    protected override void GenerateBody(StringBuilder syntaxBuilder) 
-        => syntaxBuilder.Append(_maps.ToString());
+    protected override void GenerateBody(out StringBuilder syntaxBuilder) 
+        => syntaxBuilder =_syntaxBuilder;
 }

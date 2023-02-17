@@ -20,7 +20,6 @@ namespace Initialize.Benchmarks;
 [HideColumns(Column.StdDev, Column.Median)]
 public class ChampionChallengerBenchmarks
 {
-    private static readonly RecyclableMemoryStreamManager manager = new();
     private MapperA _autoMapper;
     private List<Test> _testObjects;
 
@@ -28,9 +27,11 @@ public class ChampionChallengerBenchmarks
     {
         //Initialize mapper
         var config = new MapperConfiguration(cfg =>
-            cfg.CreateMap<Test, Test2>().ForMember(x=>
-                    x.PropString, 
-                x=>x.MapFrom(x=>x.PropString)));
+            cfg.CreateMap<Test, Test2>()
+            //    .ForMember(x=>
+            //        x.PropString, 
+            //    x=>x.MapFrom(x=>x.PropString))
+            );
         _autoMapper = new MapperA(config);
 
         //Initialize mapper
@@ -74,13 +75,13 @@ public class ChampionChallengerBenchmarks
 
         Mapper<Test, Test2>.Map(testObj, test2);
     }
-    [Benchmark(Description = "MapperNoDestObject")]
-    public void InitializeMapperNoVarPassed()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "MapperNoDestObject")]
+    //public void InitializeMapperNoVarPassed()
+    //{
+    //    var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.Map(testObj);
-    }
+    //    var result = Mapper<Test, Test2>.Map(testObj);
+    //}
     [Benchmark(Description = "AutoMapper")]
     public void AutoMapper()
     {
@@ -88,13 +89,13 @@ public class ChampionChallengerBenchmarks
 
         _autoMapper.Map(testObj, test2);
     }
-    [Benchmark(Description = "AutoMappeNoDestObject")]
-    public void AutoMapper2()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "AutoMappeNoDestObject")]
+    //public void AutoMapper2()
+    //{
+    //    var test2 = new Test2();
 
-        var result = _autoMapper.Map<Test>(testObj);
-    }
+    //    var result = _autoMapper.Map<Test>(testObj);
+    //}
 }
 
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -20,14 +20,14 @@
     <DelaySign>true</DelaySign>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RepositoryUrl>https://github.com/adam-dot-cohen/ResizableSpanWriter</RepositoryUrl>
-    <Version>0.2.7</Version>
+    <Version>0.2.8</Version>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PackageIcon>favicon.png</PackageIcon>
     <LangVersion>latest</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Title>High-Performance auto DTO initialier and property mapper / deep copier</Title>
+    <Title>Initializer - 200% faster than AutoMapper</Title>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
     <WarningLevel>6</WarningLevel>
@@ -53,6 +53,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="ResizableSpanWriter" Version="1.0.1" />
     <PackageReference Include="System.CodeDom" Version="6.0.0" />
   </ItemGroup>
 

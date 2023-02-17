@@ -7,7 +7,8 @@ namespace Initialize.Benchmarks;
 class Program
 {
     private static IConfig BenchConfig => DefaultConfig.Instance.AddJob(Job.Default.AsDefault()
-        .WithRuntime(CoreRuntime.Core70)
+        
+        .WithRuntime(CoreRuntime.Core60)
         .WithJit(Jit.RyuJit)
         .WithArguments(new[] { new MsBuildArgument("/p:Optimize=true") }));
     static void Main(string[] args)
