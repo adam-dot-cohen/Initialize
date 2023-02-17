@@ -28,7 +28,9 @@ public class ChampionChallengerBenchmarks
     {
         //Initialize mapper
         var config = new MapperConfiguration(cfg =>
-            cfg.CreateMap<Test, Test2>());
+            cfg.CreateMap<Test, Test2>().ForMember(x=>
+                    x.PropString, 
+                x=>x.MapFrom(x=>x.PropString)));
         _autoMapper = new MapperA(config);
 
         //Initialize mapper

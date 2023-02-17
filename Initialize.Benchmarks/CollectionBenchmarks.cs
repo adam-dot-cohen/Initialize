@@ -60,25 +60,25 @@ public class ChampionChallengerList
         PropString = "a",
     };
 
-    [Benchmark(Description = "Mapper", Baseline = true)]
-    public void Mapper()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "Mapper", Baseline = true)]
+    //public void Mapper()
+    //{
+    //    var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.Map(_testObjects);
+    //    var result = Mapper<Test, Test2>.Map(_testObjects);
 
-        Debug.Assert(result.Count() == _testObjects.Count());
-    }
+    //    Debug.Assert(result.Count() == _testObjects.Count());
+    //}
 
-    [Benchmark(Description = "AutoMapper")]
-    public void AutoMapper()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "AutoMapper")]
+    //public void AutoMapper()
+    //{
+    //    var test2 = new Test2();
 
-        var result = _autoMapper.Map<List<Test>>(_testObjects);
+    //    var result = _autoMapper.Map<List<Test>>(_testObjects);
 
-        Debug.Assert(result.Count == _testObjects.ToList().Count);
-    }
+    //    Debug.Assert(result.Count == _testObjects.ToList().Count);
+    //}
 }
 
 [SimpleJob(runStrategy: RunStrategy.Throughput, launchCount: 1, invocationCount: 1, iterationCount:10,
@@ -122,23 +122,23 @@ public class ChampionChallengerEnumerable
         PropString = "a",
     };
 
-    [Benchmark(Description = "Mapper", Baseline = true)]
-    public void MapperEnumerable()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "Mapper", Baseline = true)]
+    //public void MapperEnumerable()
+    //{
+    //    var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.Map(_testEnumerable);
+    //    var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
-        Debug.Assert(result.Count() == _testObjects.Count);
-    }
+    //    Debug.Assert(result.Count() == _testObjects.Count);
+    //}
 
-    [Benchmark(Description = "AutoMapper")]
-    public void AutoMapperEnumerable()
-    {
-        var test2 = new Test2();
+    //[Benchmark(Description = "AutoMapper")]
+    //public void AutoMapperEnumerable()
+    //{
+    //    var test2 = new Test2();
 
-        var result = _autoMapper.Map<List<Test>>(_testEnumerable);
+    //    var result = _autoMapper.Map<List<Test>>(_testEnumerable);
 
-        Debug.Assert(result.Count() == _testObjects.ToList().Count);
-    }
+    //    Debug.Assert(result.Count() == _testObjects.ToList().Count);
+    //}
 }
