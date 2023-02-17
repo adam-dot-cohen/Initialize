@@ -1,6 +1,6 @@
 # Overview
 ![]()
-[![NuGet version (Initialize)](https://img.shields.io/badge/nuget-v0.2.6-blue?style=flat-square)](https://www.nuget.org/packages/Initialize/)
+[![NuGet version (Initialize)](https://img.shields.io/badge/nuget-v0.2.7-blue?style=flat-square)](https://www.nuget.org/packages/Initialize/)
 
 High performance automatic object-to-object mapper for zero configuration property binding.
 
