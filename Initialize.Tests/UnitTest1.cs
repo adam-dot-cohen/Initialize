@@ -202,6 +202,50 @@ public class Tests
         Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
         Assert.That(result.PropString, Is.EqualTo(equalToString));
     }
+    //[Test]
+    //public void Should_equal_after_ParseUTF8_from_Memory_of_MemoryByte()
+    //{
+    //    var dtBytes = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
+    //    Memory<Memory<byte>> bytes = new[]
+    //    {
+    //        dtBytes.AsMemory(), 
+    //        "8"u8.ToArray().AsMemory(), 
+    //        ""u8.ToArray().AsMemory(), 
+    //        "1.0"u8.ToArray().AsMemory(), 
+    //        "hello"u8.ToArray().AsMemory()
+    //    };
+
+    //    int indexOffset = 0;
+    //    MapperConfiguration<Memory<Memory<byte>>, ParseTest>
+    //        .Configure(x => x
+    //            // index 0
+    //            .ParseFor(t => t.PropDateTimeNullable,
+    //                parse => parse.ToDateTimeNullable)
+    //            // index 1
+    //            .ParseFor(t => t.Prop,
+    //                parse => parse.ToInt)
+    //            // index 3 - skipping index 2
+    //            .ParseFor(t => t.PropDouble,
+    //                parse => parse.ToDoubleNullable, ++indexOffset)
+    //            // index 4
+    //            .ParseFor(t => t.PropString,
+    //                parse => parse.ToStringNullIfEmpty, indexOffset)
+    //        );
+
+    //    var result = Mapper<Memory<Memory<byte>>, ParseTest>.Map(bytes);
+
+    //    // equality values
+    //    var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes.Span[0].Span));
+    //    var equalToInt = int.Parse(Encoding.UTF8.GetString(bytes.Span[0].Span));
+    //    var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes.Span[3].Span));
+    //    var equalToString = Encoding.UTF8.GetString(bytes.Span[4].Span);
+
+    //    // equality tests
+    //    Assert.That(result.PropDateTimeNullable, Is.EqualTo(equalToDt));
+    //    Assert.That(result.Prop, Is.EqualTo(equalToInt));
+    //    Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
+    //    Assert.That(result.PropString, Is.EqualTo(equalToString));
+    //}
     [Test]
     public void Should_equal_after_ParseUTF8_from_ByteArray()
     {

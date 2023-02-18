@@ -21,6 +21,7 @@ public class ParseUTF8
     public string ToDateTimeNullable(int index) => $"{{0}} [{index}].ToNullableDateTime()";
     public string ToDateTimeNullable(int index, string parseFormat) => $"{{0}} [{index}].ToNullableDateTime({parseFormat})";
     public string ToDateTime(int index) => $"{{0}} [{index}].ToDateTime()";
+    public string ToDateTime(int index, string parseFormat) => $"{{0}} [{index}].ToDateTime({parseFormat})";
     public string ToTimeSpanNullable(int index) => $"{{0}} [{index}].ToNullableTimeSpan()";
     public string ToTimeSpan(int index) => $"{{0}} [{index}].ToTimeSpan()";
 }

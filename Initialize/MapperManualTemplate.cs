@@ -70,7 +70,7 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
         var right = rightSideOfAssignment(parser);
         
-        var rightStr = string.Format(right(indexOffset + index++, parseFormat), SyntaxVarFrom);
+        var rightStr = string.Format(right(indexOffset + index++, "\"" + parseFormat + "\""), SyntaxVarFrom);
 
         _syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
 

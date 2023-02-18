@@ -94,7 +94,8 @@ public abstract class MapperTemplateBase<TFrom, TTo> : IMapperTemplate<TFrom, TT
     //protected string GetToPropertyName<TProperty>(Expression<Func<TTo, TProperty>> propertyExpression)
     //    => (propertyExpression.Body as MemberExpression).Member.Name;
     protected string GetNamespace(Type type)
-        => string.Join('.', SyntaxFactory
+        => type.Namespace == null ? null : 
+            string.Join('.', SyntaxFactory
             .ParseName(provider.GetTypeOutput(new CodeTypeReference(type)))
             .NormalizeWhitespace().ToFullString().Split('.')[..^1]);
 

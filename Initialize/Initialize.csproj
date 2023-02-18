@@ -20,7 +20,7 @@
     <DelaySign>true</DelaySign>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RepositoryUrl>https://github.com/adam-dot-cohen/ResizableSpanWriter</RepositoryUrl>
-    <Version>0.2.8</Version>
+    <Version>0.2.9</Version>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
