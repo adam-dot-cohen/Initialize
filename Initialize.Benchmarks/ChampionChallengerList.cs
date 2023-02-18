@@ -13,7 +13,6 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
-using Microsoft.IO;
 using Microsoft.Diagnostics.Runtime.Utilities;
 
 namespace Initialize.Benchmarks;
@@ -24,7 +23,6 @@ namespace Initialize.Benchmarks;
 [HideColumns(Column.StdDev, Column.Median, Column.Error, Column.RatioSD, Column.Gen0, Column.Gen1, Column.Gen2)]
 public class ChampionChallengerList
 {
-    private static readonly RecyclableMemoryStreamManager manager = new();
     private MapperA _autoMapper;
     private List<Test> _testObjects;
     private IEnumerable<Test> _testEnumerable;

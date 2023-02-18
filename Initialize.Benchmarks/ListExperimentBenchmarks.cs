@@ -8,7 +8,6 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
-using Microsoft.IO;
 
 namespace Initialize.Benchmarks;
 
@@ -19,7 +18,6 @@ namespace Initialize.Benchmarks;
 [HideColumns(Column.StdDev, Column.Median)]
 public class ListExperimentBenchmarks
 {
-    private static readonly RecyclableMemoryStreamManager manager = new();
     private Mapper _autoMapper;
     private List<Test> _testEnumerable;
 

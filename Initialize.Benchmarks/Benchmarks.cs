@@ -8,8 +8,6 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
-using Microsoft.IO;
-using Microsoft.Diagnostics.Runtime.Utilities;
 
 namespace Initialize.Benchmarks;
 
