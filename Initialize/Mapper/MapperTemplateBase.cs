@@ -1,16 +1,12 @@
-﻿using Microsoft.CSharp;
-using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.CodeDom;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CSharp;
 
-namespace Initialize;
+namespace Initialize.Mapper;
 
 public interface IMapperTemplate<TFrom, TTo>
 {
@@ -50,7 +46,7 @@ public abstract class MapperTemplateBase<TFrom, TTo> : IMapperTemplate<TFrom, TT
 
         GenerateBody(out var bodySyntax);
 
-        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Runtime.CompilerServices;using System.Linq;using System.Text;using Initialize;{syntaxUsing}");
+        sb.Append($"using System;using System.Collections;using System.Collections.Generic;using System.Runtime.CompilerServices;using System.Linq;using System.Text;using Initialize;using Initialize.DelimitedParser;using Initialize.Mapper;{syntaxUsing}");
         
         sb.Append($"namespace {_namespace}{{");
         
@@ -75,6 +71,20 @@ public abstract class MapperTemplateBase<TFrom, TTo> : IMapperTemplate<TFrom, TT
                         
                         sb.Append(bodySyntax);
                         
+                        sb.Append($"return {SyntaxVarTo};");
+
+                    sb.Append($"}}");
+                    #endregion
+
+                    #region public static TTo Map(objFrom)
+                    sb.Append("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+                    
+                    sb.Append($"public static {syntaxTypeTo} Map(ref {syntaxTypeFrom} {SyntaxVarFrom}){{");
+                    
+                        sb.Append($"var {SyntaxVarTo} = new {syntaxTypeTo}();");
+                            
+                        sb.Append(bodySyntax);
+                            
                         sb.Append($"return {SyntaxVarTo};");
 
                     sb.Append($"}}");

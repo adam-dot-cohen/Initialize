@@ -1,12 +1,9 @@
-﻿using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
+﻿using System.Buffers.Text;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Initialize.DelimitedParser;
 
-namespace Initialize;
+namespace Initialize.DelimitedParser;
 
 public class ParseUTF8
 {
@@ -265,42 +262,42 @@ public static partial class ParseExtensions
 
     public static double ToDouble(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out double value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out double value, out int bytesConsumed))
             return value;
         return default;
     }
 
     public static double? ToNullableDouble(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out double value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out double value, out int bytesConsumed))
             return value;
         return null;
     }
 
     public static int ToInt(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out int value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out int value, out int bytesConsumed))
             return value;
         return default;
     }
 
     public static int? ToNullableInt(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out int value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out int value, out int bytesConsumed))
             return value;
         return null;
     }
 
     public static long ToLong(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out long value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out long value, out int bytesConsumed))
             return value;
         return default;
     }
 
     public static long? ToNullableLong(this byte[] span)
     {
-        if (Utf8Parser.TryParse(span, out long value, out int bytesConsumed))
+        if (Utf8Parser.TryParse(span.AsSpan(), out long value, out int bytesConsumed))
             return value;
         return null;
     }
@@ -310,7 +307,7 @@ public static partial class ParseExtensions
     ///// </summary>
     //public static DateTime? ToNullableDateTime(this byte[] span)
     //{
-    //    if (Utf8Parser.TryParse(span.Span, out DateTime value, out int bytesConsumed))
+    //    if (Utf8Parser.TryParse(span.AsSpan().Span, out DateTime value, out int bytesConsumed))
     //        return value;
     //    return null;
     //}
@@ -355,6 +352,122 @@ public static partial class ParseExtensions
     public static char? ToNullableChar(this byte[] span)
     {
         var dtString = span.ToUtf8String();
+        if (Char.TryParse(dtString, out char value))
+            return value;
+        return null;
+    }
+}
+
+
+public static partial class ParseExtensions
+{
+    public static string ToUtf8String(this SpanByte span)
+    {
+        return Encoding.UTF8.GetString(span.AsSpan());
+    }
+
+    public static string ToStringNullIfEmpty(this SpanByte span)
+    {
+        if (span.Length > 0)
+            return Encoding.UTF8.GetString(span.AsSpan());
+        return null;
+    }
+
+    public static double ToDouble(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out double value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static double? ToNullableDouble(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out double value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static int ToInt(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out int value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static int? ToNullableInt(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out int value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    public static long ToLong(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out long value, out int bytesConsumed))
+            return value;
+        return default;
+    }
+
+    public static long? ToNullableLong(this SpanByte span)
+    {
+        if (Utf8Parser.TryParse(span.AsSpan(), out long value, out int bytesConsumed))
+            return value;
+        return null;
+    }
+
+    ///// <summary>
+    ///// https://learn.microsoft.com/en-us/dotnet/api/system.buffers.text.utf8parser.tryparse?view=net-7.0#system-buffers-text-utf8parser-tryparse(system-readonlyspan((system-byte))-system-datetime@-system-int32@-system-char)
+    ///// </summary>
+    //public static DateTime? ToNullableDateTime(this SpanByte span)
+    //{
+    //    if (Utf8Parser.TryParse(span.AsSpan().Span, out DateTime value, out int bytesConsumed))
+    //        return value;
+    //    return null;
+    //}
+
+    public static DateTime? ToNullableDateTime(this SpanByte span)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
+        if (DateTime.TryParse(dtString, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+
+    public static DateTime? ToNullableDateTime(this SpanByte span, string format)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return null;
+    }
+
+    public static DateTime ToDateTime(this SpanByte span, string format)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
+        if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
+            return value;
+        return default;
+    }
+
+    public static TimeSpan? ToNullableTimeSpan(this SpanByte span)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return null;
+    }
+
+    public static TimeSpan ToTimeSpan(this SpanByte span)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
+        if (TimeSpan.TryParse(dtString, out var d))
+            return d;
+        return default;
+    }
+
+    public static char? ToNullableChar(this SpanByte span)
+    {
+        var dtString = span.AsSpan().ToUtf8String();
         if (Char.TryParse(dtString, out char value))
             return value;
         return null;

@@ -77,30 +77,16 @@ public class ListExperimentBenchmarks
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArray(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
-    }
-    //[Benchmark]
-    //public void Span()
-    //{
-    //    var test2 = new Test2();
-    //    int cnt = 0, current = 0;
-    //    var span = _testObjects.ToArray().AsSpan();
-    //    Span<Test2> spanTo = new Test2[span.Length];
-
-    //    for (int i = 0; i < cnt; i++)
-    //        spanTo[i] =  Mapper<Test, Test2>.Map(span[i]);
-
-       
-    //    Debug.Assert(spanTo.ToArray().Count() == _testObjects.Count());
-    //}
+    } 
     [Benchmark]
     public void MapInline()
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArrayInline(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
     }    
@@ -109,7 +95,7 @@ public class ListExperimentBenchmarks
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArrayOpt(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
     }

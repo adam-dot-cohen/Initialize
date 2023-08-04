@@ -13,18 +13,18 @@ namespace Initialize.Benchmarks;
     runtimeMoniker: RuntimeMoniker.Net70)]
 [MemoryDiagnoser]
 [HideColumns(Column.StdDev, Column.Median, Column.Error, Column.RatioSD)]
-public class ChampionChallengerEnumerable
+public class ChampionChallengerEnumerableMapping
 {
-    private Mapper _autoMapper;
+    private AutoMapper.Mapper _autoMapper;
     private List<Test> _testObjects;
     private IEnumerable<Test> _testEnumerable;
 
-    public ChampionChallengerEnumerable()
+    public ChampionChallengerEnumerableMapping()
     {
         //Initialize mapper
         var config = new MapperConfiguration(cfg =>
             cfg.CreateMap<Test, Test2>());
-        _autoMapper = new Mapper(config);
+        _autoMapper = new AutoMapper.Mapper(config);
 
         //Initialize mapper
         Mapper<Test, Test2>.Map(testObj);
@@ -48,17 +48,17 @@ public class ChampionChallengerEnumerable
         Prop = 1,
         PropString = "a",
     };
-    [Benchmark(Description = "Mapper", Baseline = true)]
+    [Benchmark(Description = "Initialize_List", Baseline = true)]
     public void Mapper()
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapEnumerable(_testObjects);
+        var result = Mapper<Test, Test2>.Map(_testObjects);
 
         Debug.Assert(result.Count() == _testObjects.Count);
     }
 
-    [Benchmark(Description = "AutoMapper")]
+    [Benchmark(Description = "AutoMapper_List")]
     public void AutoMapper()
     {
         var test2 = new Test2();
@@ -67,17 +67,17 @@ public class ChampionChallengerEnumerable
 
         Debug.Assert(result.Count() == _testObjects.Count);
     }
-    [Benchmark(Description = "MapperEnumerable")]
+    [Benchmark(Description = "Initialize_IEnumerable")]
     public void MapperEnumerable()
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapEnumerable(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testObjects.Count);
     }
 
-    [Benchmark(Description = "AutoMapperEnumerable")]
+    [Benchmark(Description = "AutoMapper_IEnumerable")]
     public void AutoMapperEnumerable()
     {
         var test2 = new Test2();

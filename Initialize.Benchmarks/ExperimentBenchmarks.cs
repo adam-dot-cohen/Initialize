@@ -79,7 +79,7 @@ public class ExperimentBenchmarks
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArray(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
     }
@@ -102,7 +102,7 @@ public class ExperimentBenchmarks
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArrayInline(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
     }    
@@ -111,7 +111,7 @@ public class ExperimentBenchmarks
     {
         var test2 = new Test2();
 
-        var result = Mapper<Test, Test2>.MapArrayOpt(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testEnumerable);
 
         Debug.Assert(result.Count() == _testEnumerable.Count());
     }

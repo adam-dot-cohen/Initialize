@@ -1,4 +1,4 @@
-﻿namespace Initialize;
+﻿namespace Initialize.Initialize;
 
 public static class InitializerSettings<T>
 {

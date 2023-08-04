@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
+using Initialize.Initialize;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -76,27 +77,25 @@ public static class Initializer<T>
     private static void Emit(CSharpCompilation _compilation, SyntaxTree syntax)
     {
         if (CachedDelegate != null) return;
-        using (var ms = new MemoryStream())
-        {
-            var result = _compilation.Emit(ms);
+        using var ms = new MemoryStream();
+        var result = _compilation.Emit(ms);
 
-            InitializeCompilationException.ThrowIfEmitResultNullOrUnsuccessful(result, syntax);
+        InitializeCompilationException.ThrowIfEmitResultNullOrUnsuccessful(result, syntax);
 
-            ms.Seek(0, SeekOrigin.Begin);
+        ms.Seek(0, SeekOrigin.Begin);
 
 #if NET5_0_OR_GREATER
-            var generatedAssembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+        var generatedAssembly = AssemblyLoadContext.Default.LoadFromStream(ms);
 #else
                 var generatedAssembly = Assembly.Load(ms.ToArray());
                 
 #endif
-            _proxyType = generatedAssembly.GetType(_proxyTypeName);
+        _proxyType = generatedAssembly.GetType(_proxyTypeName);
 
-            Span<byte> buffer = new byte[ms.Length];
-            ms.Seek(0, SeekOrigin.Begin);
-            ms.Read(buffer);
-            AppDomain.CurrentDomain.Load(buffer.ToArray());
-        }
+        Span<byte> buffer = new byte[ms.Length];
+        ms.Seek(0, SeekOrigin.Begin);
+        ms.Read(buffer);
+        AppDomain.CurrentDomain.Load(buffer.ToArray());
     }
 
     

@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ChampionChallengerList.cs" />
+    <Compile Remove="ExperimentBenchmarks.cs" />
+    <Compile Remove="ListExperimentBenchmarks.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="BenchmarkDotNet" Version="0.13.4" />
     <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.13.4" />

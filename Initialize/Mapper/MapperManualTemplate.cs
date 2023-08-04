@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
+using Initialize.DelimitedParser;
 
-namespace Initialize;
+namespace Initialize.Mapper;
 
 public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 {
@@ -20,7 +20,7 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
         return this;
     }
 
-    private static int index = 0;
+    private int index = 0;
     public MapperManualTemplate<TFrom, TTo> For<TProperty>(Expression<Func<TTo, TProperty>> propTo, string rightSideOfAssignment)
     {
         var toName = GetPropertyName(propTo);

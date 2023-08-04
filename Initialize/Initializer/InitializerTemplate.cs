@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CSharp;
 
-namespace Initialize;
+namespace Initialize.Initialize;
 
 public class InitializerTemplate<T>
 {

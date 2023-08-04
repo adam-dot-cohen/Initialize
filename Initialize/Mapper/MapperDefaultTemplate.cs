@@ -1,12 +1,8 @@
-﻿using System.CodeDom;
-using Microsoft.CSharp;
-using System.Collections;
+﻿using System.Collections;
 using System.Reflection;
 using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
-namespace Initialize;
+namespace Initialize.Mapper;
 
 public class MapperDefaultTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 {

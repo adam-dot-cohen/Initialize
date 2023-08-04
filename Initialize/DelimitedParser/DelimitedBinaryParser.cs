@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Initialize;
+namespace Initialize.DelimitedParser;
 
 /// <summary>
 /// Parser for delimited binary data

@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 namespace Initialize.Generators;
 public static class CSharpGeneratorFactory
 {
-    public static string GenerateDto<T>(string @namespace, string nameSuffix = "Dto")
+    public static string GenerateModelClass<T>(string @namespace, string nameSuffix = "Model", bool notifyOnPropertyChanged = false)
     {
         var generator = new CSharpDtoGenerator(typeof(T), nameSuffix,@namespace, false);
         return generator.Generate().NormalizeWhitespace().ToFullString();

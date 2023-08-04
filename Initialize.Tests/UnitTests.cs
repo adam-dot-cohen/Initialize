@@ -5,11 +5,16 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Unicode;
+using Initialize.DelimitedParser;
 using Initialize.Generators;
+using Initialize.Mapper;
 using NUnit.Framework.Constraints;
+using Shouldly;
 
 namespace Initialize.Tests;
 
@@ -20,63 +25,51 @@ public class Tests
     {
     }
 
-    //[Test]
-    //public void Test()
-    //{
-    //    var test = new Test();
-    //    var test2 = new Test2();
-
-    //    // 1. Optional - Customize default configuration
-    //    //Initializer<Test>.DefaultTemplate.Clear();
-
-    //    //Initializer<Test>.DefaultTemplate.Add(typeof(string), (obj, propInfo, friendlyTypeName) => "string.Empty");
-    //    //Initializer<Test>.DefaultTemplate.Add(typeof(ValueType), (obj, propInfo, friendlyTypeName) => "default" );
-    //    //Initializer<Test>.DefaultTemplate.Add(typeof(Nullable<>),
-    //    //    (obj, propInfo, friendlyTypeName) => 
-    //    //        string.Format("(({2}?){0}.{1})!.GetValueOrDefault()", obj, propInfo.Name, friendlyTypeName ) );
-
-    //    // 2. Call initialize
-    //    Initializer<Test>.Initialize(test);
-
-    //    var initializeResult = !AreAnyPropertiesNull(test);
+    [Test]
+    public void Should_initialize_values_to_non_null_defaults()
+    {
+        var test = new Test();
+        var test2 = new Test2();
 
 
-    //    //Map example
-    //    Mapper<Test, Test2>.Map(test, test2);
+        // arrange
+        Initializer<Test>.Initialize(test);
+        var initializeResult = !AreAnyPropertiesNull(test);
 
-    //    var mapResult = AllCommonPropertiesAreEqual(test, test2);
+        // assert
+        Assert.True(initializeResult);
+    }
+    [Test]
+    public void Should_equal_count_when_list_is_less_than_batch_size()
+    {
+        var items = Enumerable.Range(0, 1).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
 
-    //    Assert.True(initializeResult && mapResult);
-    //}
+        var result = Mapper<Test, Test2>.Map(items);
 
-    //[Test]
-    //public void Should_equal_count_when_list_is_less_than_batch_size()
-    //{
-    //    var items = Enumerable.Range(0, 1).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
+        Assert.That(result.Count(), Is.EqualTo(items.Count));
+        Assert.That(result.First().PropString, Is.EqualTo(items.First().PropString));
+    }
 
-    //    var result = Mapper<Test, Test2>.Map(items);
+    [Test]
+    public void Should_equal_count_when_list_is_greater_than_batch_size()
+    {
+        var items = Enumerable.Range(0, 101).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
 
-    //    Assert.AreEqual(items.Count(), result.Count());
-    //}
+        var result = Mapper<Test, Test2>.Map(items);
 
-    //[Test]
-    //public void Should_equal_count_when_list_is_greater_than_batch_size()
-    //{
-    //    var items = Enumerable.Range(0, 101).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
+        Assert.That(result.Count(), Is.EqualTo(items.Count));
+        Assert.That(result.Last().PropString, Is.EqualTo(items.Last().PropString));
+    }
+    [Test]
+    public void Should_equal_count_when_list_is_large()
+    {
+        var items = Enumerable.Range(0, 100000).Select(i => new Test { Prop = i, PropString = i.ToString() }).ToList();
 
-    //    var result = Mapper<Test, Test2>.Map(items);
+        var result = Mapper<Test, Test2>.Map(items);
 
-    //    Assert.AreEqual(items.Count, result.Count());
-    //}
-    //[Test]
-    //public void Should_equal_count_when_list_is_larg()
-    //{
-    //    var items = Enumerable.Range(0, 100000).Select(i => new Test { Prop = i, PropString = i.ToUtf8String() }).ToList();
-
-    //    var result = Mapper<Test, Test2>.Map2(items);
-
-    //    Assert.That(result.Count(), Is.EqualTo(items.Count));
-    //}
+        Assert.That(result.Count(), Is.EqualTo(items.Count));
+        Assert.That(result.Last().PropString, Is.EqualTo(items.Last().PropString));
+    }
     [Test]
     public void Should_equal_with_manual_config()
     {
@@ -113,20 +106,21 @@ public class Tests
 
         var objTo = Mapper<Test3, Test3>.Map(objFrom);
 
-        Assert.AreEqual(objFrom.ValueTypeArray?.Length, objTo.ValueTypeArray?.Length);
-        Assert.AreEqual(objFrom.Array?.Length, objTo.Array?.Length);
-        Assert.AreEqual(objFrom.Array2?.Length, objTo.Array2?.Length);
-        Assert.AreEqual(objFrom.ValueTypeList?.Count, objTo.ValueTypeList?.Count);
-        Assert.AreEqual(objFrom.List?.Count, objTo.List?.Count);
-        Assert.AreEqual(objFrom.ValueTypeDictionary?.Count, objTo.ValueTypeDictionary?.Count);
-        Assert.AreEqual(objFrom.Dictionary?.Count, objTo.Dictionary?.Count);
-        //        Assert.AreEqual(objFrom.ValueTypeHashSet?.Count, objTo.ValueTypeHashSet?.Count);
-        Assert.AreEqual(objFrom.HashSet?.Count, objTo.HashSet?.Count);
+        Assert.That(objTo.ValueTypeArray?.Length, Is.EqualTo(objFrom.ValueTypeArray?.Length));
+        Assert.That(objTo.Array?.Length, Is.EqualTo(objFrom.Array?.Length));
+        Assert.That(objTo.Array2?.Length, Is.EqualTo(objFrom.Array2?.Length));
+        Assert.That(objTo.ValueTypeList?.Count, Is.EqualTo(objFrom.ValueTypeList?.Count));
+        Assert.That(objTo.List?.Count, Is.EqualTo(objFrom.List?.Count));
+        Assert.That(objTo.ValueTypeDictionary?.Count, Is.EqualTo(objFrom.ValueTypeDictionary?.Count));
+        Assert.That(objTo.Dictionary?.Count, Is.EqualTo(objFrom.Dictionary?.Count));
+        Assert.AreEqual(objFrom.ValueTypeHashSet?.Count, objTo.ValueTypeHashSet?.Count);
+        Assert.That(objTo.HashSet?.Count, Is.EqualTo(objFrom.HashSet?.Count));
     }
-
+    
     [Test]
     public void Should_equal_after_parse_utf8_with_manual_config()
     {
+        
         Memory<byte>[] bytes = { 
             Encoding.UTF8.GetBytes(DateTime.Now.ToString()), 
             "8"u8.ToArray(), 
@@ -202,50 +196,7 @@ public class Tests
         Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
         Assert.That(result.PropString, Is.EqualTo(equalToString));
     }
-    //[Test]
-    //public void Should_equal_after_ParseUTF8_from_Memory_of_MemoryByte()
-    //{
-    //    var dtBytes = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
-    //    Memory<Memory<byte>> bytes = new[]
-    //    {
-    //        dtBytes.AsMemory(), 
-    //        "8"u8.ToArray().AsMemory(), 
-    //        ""u8.ToArray().AsMemory(), 
-    //        "1.0"u8.ToArray().AsMemory(), 
-    //        "hello"u8.ToArray().AsMemory()
-    //    };
-
-    //    int indexOffset = 0;
-    //    MapperConfiguration<Memory<Memory<byte>>, ParseTest>
-    //        .Configure(x => x
-    //            // index 0
-    //            .ParseFor(t => t.PropDateTimeNullable,
-    //                parse => parse.ToDateTimeNullable)
-    //            // index 1
-    //            .ParseFor(t => t.Prop,
-    //                parse => parse.ToInt)
-    //            // index 3 - skipping index 2
-    //            .ParseFor(t => t.PropDouble,
-    //                parse => parse.ToDoubleNullable, ++indexOffset)
-    //            // index 4
-    //            .ParseFor(t => t.PropString,
-    //                parse => parse.ToStringNullIfEmpty, indexOffset)
-    //        );
-
-    //    var result = Mapper<Memory<Memory<byte>>, ParseTest>.Map(bytes);
-
-    //    // equality values
-    //    var equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes.Span[0].Span));
-    //    var equalToInt = int.Parse(Encoding.UTF8.GetString(bytes.Span[0].Span));
-    //    var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes.Span[3].Span));
-    //    var equalToString = Encoding.UTF8.GetString(bytes.Span[4].Span);
-
-    //    // equality tests
-    //    Assert.That(result.PropDateTimeNullable, Is.EqualTo(equalToDt));
-    //    Assert.That(result.Prop, Is.EqualTo(equalToInt));
-    //    Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
-    //    Assert.That(result.PropString, Is.EqualTo(equalToString));
-    //}
+    
     [Test]
     public void Should_equal_after_ParseUTF8_from_ByteArray()
     {
@@ -261,7 +212,7 @@ public class Tests
                 // index 1
                 .ParseFor(t => t.Prop,
                     parse => parse.ToInt)
-                // index 3 - skipping index 2
+                // index 3 - skipping column index 2
                 .ParseFor(t => t.PropDouble,
                     parse => parse.ToDoubleNullable, ++indexOffset)
                 // index 4
@@ -286,17 +237,68 @@ public class Tests
     [Test]
     public void GenerateDtoWithoutNotifyPropertyChanged()
     {
-        var text = CSharpGeneratorFactory.GenerateDto<Test>("Tester");
+        var text = CSharpGeneratorFactory.GenerateModelClass<Test>("Tester", "Dto", notifyOnPropertyChanged:true);
 
-        Assert.AreEqual(text, generatedDto);
+        Assert.That(generatedDto, Is.EqualTo(text));
     }
+    [Test]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public unsafe void Should_equal_after_ParseUTF8_from_SpanByte()
+    {
+        var dtBytes = Encoding.UTF8.GetBytes(DateTime.Now.ToString());
 
+        SpanByte[] bytes = new SpanByte[5];
+        var cnt = 0;
+        foreach (Span<byte> item in new[] { dtBytes, "8"u8.ToArray(), ""u8.ToArray(), "1.0"u8.ToArray(), "hello"u8.ToArray() })
+        {
+            fixed (byte* ptr = item)
+            {
+                bytes[cnt++] = SpanByte.FromPointer(ptr, item.Length);
+            }
+        }
+
+        var arr = DateTime.Parse(Encoding.UTF8.GetString(bytes[0].AsSpan()));
+        var eval = DateTime.Parse(Encoding.UTF8.GetString(dtBytes.AsSpan())) == arr;
+        Assert.True(eval);
+
+        int indexOffset = 0;
+        MapperConfiguration<SpanByte[], ParseTest>
+            .Configure(x => x
+                // index 0
+                .ParseFor(t => t.PropDateTimeNullable,
+                    parse => parse.ToDateTimeNullable)
+                // index 1
+                .ParseFor(t => t.Prop,
+                    parse => parse.ToInt)
+                // index 3 - skipping column index 2
+                .ParseFor(t => t.PropDouble,
+                    parse => parse.ToDoubleNullable, ++indexOffset)
+                // index 4
+                .ParseFor(t => t.PropString,
+                    parse => parse.ToStringNullIfEmpty, indexOffset)
+            );
+
+        var result = Mapper<SpanByte[], ParseTest>.Map(ref bytes);
+
+        // equality value
+        var bytes1 = bytes[0].AsSpanWithMetadata();
+        DateTime equalToDt = DateTime.Parse(Encoding.UTF8.GetString(bytes1));
+        var equalToInt = int.Parse(Encoding.UTF8.GetString(bytes[1].AsSpanWithMetadata()));
+        var equalToDouble = double.Parse(Encoding.UTF8.GetString(bytes[3].AsSpanWithMetadata()));
+        var equalToString = Encoding.UTF8.GetString(bytes[4].AsSpanWithMetadata());
+
+        // equality tests
+        Assert.That(result.PropDateTimeNullable, Is.EqualTo(equalToDt));
+        Assert.That(result.Prop, Is.EqualTo(equalToInt));
+        Assert.That(result.PropDouble, Is.EqualTo(equalToDouble));
+        Assert.That(result.PropString, Is.EqualTo(equalToString));
+    }
     [Test]
     public void GenerateDtoWithNotifyPropertyChanged()
     {
         var text = CSharpGeneratorFactory.GenerateDtoWithNotifyPropertyChanged<Test>("Tester");
 
-        Assert.AreEqual(text, generatedDtoWithPropertyChanged);
+        Assert.That(generatedDtoWithPropertyChanged, Is.EqualTo(text));
     }
 
     private bool AreAnyPropertiesNull<TObject>(TObject obj, params string[]? exclude)
