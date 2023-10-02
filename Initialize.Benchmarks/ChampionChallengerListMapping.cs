@@ -15,13 +15,13 @@ namespace Initialize.Benchmarks;
     runtimeMoniker: RuntimeMoniker.Net70)]
 [MemoryDiagnoser]
 [HideColumns(Column.StdDev, Column.Median, Column.Error, Column.RatioSD)]
-public class ChampionChallengerEnumerableMapping
+public class ChampionChallengerListMapping
 {
     private AutoMapper.Mapper _autoMapper;
     private List<Test> _testObjects;
     private IEnumerable<Test> _testEnumerable;
 
-    public ChampionChallengerEnumerableMapping()
+    public ChampionChallengerListMapping()
     {
         //Initialize mapper
         var config = new MapperConfiguration(cfg =>
@@ -32,7 +32,7 @@ public class ChampionChallengerEnumerableMapping
         Mapper<Test, Test2>.Map(new Test());
     }
 
-    [Params(100, 1_000, 10_000, 100_000, 1_000_000)]
+    [Params(100, 100_000, 1_000_000, 10_000_000)]
     public int Iterations { get; set; }
 
     [IterationSetup]
@@ -45,18 +45,18 @@ public class ChampionChallengerEnumerableMapping
     }
 
     [Benchmark(Description = "AutoMapper")]
-    public void AutoMapperEnumerable()
-    {
-        var result = this._autoMapper.Map<IEnumerable<Test>>(_testEnumerable);
-        
-       // if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
+    public void AutoMapper()
+    { 
+        var result = this._autoMapper.Map<List<Test2>>(_testObjects);
+
+        if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count} and {Iterations}not equal");
     }
 
-    [Benchmark(Description = "Initialize")]
-    public void MapperEnumerable()
+    [Benchmark(Description = "Initialize", Baseline = true)]
+    public void Mapper()
     {
-        var result = Mapper<Test, Test2>.Map(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(_testObjects);
         
-        //if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
+        if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
     }
 }

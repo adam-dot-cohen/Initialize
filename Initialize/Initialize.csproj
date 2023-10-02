@@ -10,7 +10,6 @@
     <Company>Hyperlnq</Company>
     <Product>Initialize</Product>
     <Copyright>2023</Copyright>
-    <Description>High performance automatic DTO mapper and properties initializer based on Roslyn dynamic code and compilation</Description>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/adam-dot-cohen/Initialize</PackageProjectUrl>
     <PackageTags>DTO mapper; Generator;AutoMapper;Initializer</PackageTags>
@@ -36,6 +35,8 @@
     <WarningLevel>6</WarningLevel>
   </PropertyGroup>
 
+ 
+
   <ItemGroup>
     <None Include="..\License.txt">
       <Pack>True</Pack>
@@ -55,5 +56,4 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
   </ItemGroup>
-
 </Project>

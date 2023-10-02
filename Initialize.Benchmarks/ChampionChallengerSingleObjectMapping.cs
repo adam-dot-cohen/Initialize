@@ -30,15 +30,15 @@ public class ChampionChallengerBenchmarks
             //        x.PropString, 
             //    x=>x.MapFrom(x=>x.PropString))
             );
-        _autoMapper = new MapperA(config);
+        this._autoMapper = new MapperA(config);
 
         //Initialize mapper
-        Mapper<Test, Test2>.Map(testObj);
+        Mapper<Test, Test2>.Map(this.testObj);
 
-        _testObjects = Enumerable.Range(0, 10000).Select(r => new Test() { PropString = r.ToString(), Prop = r }).ToList();
+        this._testObjects = Enumerable.Range(0, 10000).Select(r => new Test() { PropString = r.ToString(), Prop = r }).ToList();
     }
 
-    private Test testObj = new Test()
+    private Test testObj = new()
     {
         Prop = 1,
         PropString = "a",
@@ -71,7 +71,7 @@ public class ChampionChallengerBenchmarks
     {
         var test2 = new Test2();
 
-        Mapper<Test, Test2>.Map(testObj, test2);
+        Mapper<Test, Test2>.Map(this.testObj, test2);
     }
     //[Benchmark(Description = "MapperNoDestObject")]
     //public void InitializeMapperNoVarPassed()
@@ -85,7 +85,7 @@ public class ChampionChallengerBenchmarks
     {
         var test2 = new Test2();
 
-        _autoMapper.Map(testObj, test2);
+        this._autoMapper.Map(this.testObj, test2);
     }
     //[Benchmark(Description = "AutoMappeNoDestObject")]
     //public void AutoMapper2()

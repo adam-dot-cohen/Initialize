@@ -1,5 +1,8 @@
 ﻿using System.Buffers.Text;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using Initialize.DelimitedParser;
 
@@ -25,7 +28,7 @@ public class ParseUTF8
 
 public static partial class ParseExtensions
 {
-     public static string ToUtf8String(this Memory<byte> span)
+    public static string ToUtf8String(this Memory<byte> span)
     {
         return Encoding.UTF8.GetString(span.Span);
     }
@@ -88,7 +91,7 @@ public static partial class ParseExtensions
     //        return value;
     //    return null;
     //}
-    
+
     public static DateTime? ToNullableDateTime(this Memory<byte> span)
     {
         var dtString = span.ToUtf8String();
@@ -200,7 +203,7 @@ public static partial class ParseExtensions
     //        return value;
     //    return null;
     //}
-    
+
     public static DateTime? ToNullableDateTime(this Span<byte> span)
     {
         var dtString = span.ToUtf8String();
@@ -311,7 +314,7 @@ public static partial class ParseExtensions
     //        return value;
     //    return null;
     //}
-    
+
     public static DateTime? ToNullableDateTime(this byte[] span)
     {
         var dtString = span.ToUtf8String();
@@ -425,49 +428,62 @@ public static partial class ParseExtensions
     //    return null;
     //}
 
-    public static DateTime? ToNullableDateTime(this SpanByte span)
+    public static unsafe DateTime? ToNullableDateTime(this SpanByte spanByte)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (DateTime.TryParse(dtString, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return null;
+
     }
 
-    public static DateTime? ToNullableDateTime(this SpanByte span, string format)
+    public static unsafe DateTime? ToNullableDateTime(this SpanByte spanByte, string format)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return null;
     }
 
-    public static DateTime ToDateTime(this SpanByte span, string format)
+    public static unsafe DateTime ToDateTime(this SpanByte spanByte, string format)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (DateTime.TryParseExact(dtString, format, null, DateTimeStyles.AssumeLocal, out var value))
             return value;
         return default;
     }
 
-    public static TimeSpan? ToNullableTimeSpan(this SpanByte span)
+    public static unsafe TimeSpan? ToNullableTimeSpan(this SpanByte spanByte)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (TimeSpan.TryParse(dtString, out var d))
             return d;
         return null;
     }
 
-    public static TimeSpan ToTimeSpan(this SpanByte span)
+    public static unsafe TimeSpan ToTimeSpan(this SpanByte spanByte)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (TimeSpan.TryParse(dtString, out var d))
             return d;
         return default;
     }
 
-    public static char? ToNullableChar(this SpanByte span)
+    public static unsafe char? ToNullableChar(this SpanByte spanByte)
     {
-        var dtString = span.AsSpan().ToUtf8String();
+        ref var span = ref spanByte;
+        Span<byte> bytes = spanByte.ToByteArray();
+        var dtString = bytes.ToUtf8String();
         if (Char.TryParse(dtString, out char value))
             return value;
         return null;
