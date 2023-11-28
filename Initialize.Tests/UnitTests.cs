@@ -35,7 +35,7 @@ public class Tests
 
         // arrange
         Initializer<Test>.Initialize(test);
-        var initializeResult = !AreAnyPropertiesNull(test);
+        var initializeResult = !this.AreAnyPropertiesNull(test);
 
         // assert
         Assert.True(initializeResult);

@@ -41,7 +41,7 @@ namespace Initialize.Reflection
             bool allMembers = members == null || members.Length == 0;
 
             this.accessor = TypeAccessor.Create(type);
-            if (accessor.GetMembersSupported)
+            if (this.accessor.GetMembersSupported)
             {
                 // Sort members by ordinal first and then by name.
                 var typeMembers = this.accessor.GetMembers().OrderBy(p => p.Ordinal).ToList();
@@ -120,51 +120,51 @@ namespace Initialize.Reflection
                 }
             };
             object[] rowData = new object[5];
-            for (int i = 0; i < memberNames.Length; i++)
+            for (int i = 0; i < this.memberNames.Length; i++)
             {
                 rowData[0] = i;
-                rowData[1] = memberNames[i];
-                rowData[2] = effectiveTypes == null ? typeof(object) : effectiveTypes[i];
+                rowData[1] = this.memberNames[i];
+                rowData[2] = this.effectiveTypes == null ? typeof(object) : this.effectiveTypes[i];
                 rowData[3] = -1;
-                rowData[4] = allowNull == null ? true : allowNull[i];
+                rowData[4] = this.allowNull == null ? true : this.allowNull[i];
                 table.Rows.Add(rowData);
             }
             return table;
         }
         public override void Close()
         {
-            Shutdown();
+			this.Shutdown();
         }
 
         public override bool HasRows
         {
             get
             {
-                return active;
+                return this.active;
             }
         }
         private bool active = true;
         public override bool NextResult()
         {
-            active = false;
+			this.active = false;
             return false;
         }
         public override bool Read()
         {
-            if (active)
+            if (this.active)
             {
-                var tmp = source;
+                var tmp = this.source;
                 if (tmp != null && tmp.MoveNext())
                 {
-                    current = tmp.Current;
+					this.current = tmp.Current;
                     return true;
                 }
                 else
                 {
-                    active = false;
+					this.active = false;
                 }
             }
-            current = null;
+			this.current = null;
             return false;
         }
 
@@ -176,26 +176,26 @@ namespace Initialize.Reflection
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (disposing) Shutdown();
+            if (disposing) this.Shutdown();
         }
         private void Shutdown()
         {
-            active = false;
-            current = null;
-            var tmp = source as IDisposable;
-            source = null;
+			this.active = false;
+			this.current = null;
+            var tmp = this.source as IDisposable;
+			this.source = null;
             if (tmp != null) tmp.Dispose();
         }
 
         public override int FieldCount
         {
-            get { return memberNames.Length; }
+            get { return this.memberNames.Length; }
         }
         public override bool IsClosed
         {
             get
             {
-                return source == null;
+                return this.source == null;
             }
         }
 
@@ -243,7 +243,7 @@ namespace Initialize.Reflection
 
         public override string GetDataTypeName(int i)
         {
-            return (effectiveTypes == null ? typeof(object) : effectiveTypes[i]).Name;
+            return (this.effectiveTypes == null ? typeof(object) : this.effectiveTypes[i]).Name;
         }
 
         public override DateTime GetDateTime(int i)
@@ -263,7 +263,7 @@ namespace Initialize.Reflection
 
         public override Type GetFieldType(int i)
         {
-            return effectiveTypes == null ? typeof(object) : effectiveTypes[i];
+            return this.effectiveTypes == null ? typeof(object) : this.effectiveTypes[i];
         }
 
         public override float GetFloat(int i)
@@ -293,12 +293,12 @@ namespace Initialize.Reflection
 
         public override string GetName(int i)
         {
-            return memberNames[i];
+            return this.memberNames[i];
         }
 
         public override int GetOrdinal(string name)
         {
-            return Array.IndexOf(memberNames, name);
+            return Array.IndexOf(this.memberNames, name);
         }
 
         public override string GetString(int i)
@@ -332,7 +332,7 @@ namespace Initialize.Reflection
 
         public override object this[string name]
         {
-            get { return accessor[current, name] ?? DBNull.Value; }
+            get { return this.accessor[this.current, name] ?? DBNull.Value; }
 
         }
         /// <summary>
@@ -340,7 +340,7 @@ namespace Initialize.Reflection
         /// </summary>
         public override object this[int i]
         {
-            get { return accessor[current, memberNames[i]] ?? DBNull.Value; }
+            get { return this.accessor[this.current, this.memberNames[i]] ?? DBNull.Value; }
         }
     }
 }

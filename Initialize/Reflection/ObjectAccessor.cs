@@ -20,21 +20,21 @@ namespace Initialize.Reflection
         /// </summary>
         public override bool Equals(object obj)
         {
-            return Target.Equals(obj);
+            return this.Target.Equals(obj);
         }
         /// <summary>
         /// Obtain the hash of the target object
         /// </summary>
         public override int GetHashCode()
         {
-            return Target.GetHashCode();
+            return this.Target.GetHashCode();
         }
         /// <summary>
         /// Use the target's definition of a string representation
         /// </summary>
         public override string ToString()
         {
-            return Target.ToString();
+            return this.Target.ToString();
         }
 
         /// <summary>
@@ -65,12 +65,12 @@ namespace Initialize.Reflection
             }
             public override object this[string name]
             {
-                get { return accessor[target, name]; }
-                set { accessor[target, name] = value; }
+                get { return this.accessor[this.target, name]; }
+                set { this.accessor[this.target, name] = value; }
             }
             public override object Target
             {
-                get { return target; }
+                get { return this.target; }
             }
         }
         sealed class DynamicWrapper : ObjectAccessor
@@ -78,7 +78,7 @@ namespace Initialize.Reflection
             private readonly IDynamicMetaObjectProvider target;
             public override object Target
             {
-                get { return target; }
+                get { return this.target; }
             }
             public DynamicWrapper(IDynamicMetaObjectProvider target)
             {
@@ -86,8 +86,8 @@ namespace Initialize.Reflection
             }
             public override object this[string name]
             {
-                get { return CallSiteCache.GetValue(name, target); }
-                set { CallSiteCache.SetValue(name, target, value); }
+                get { return CallSiteCache.GetValue(name, this.target); }
+                set { CallSiteCache.SetValue(name, this.target, value); }
             }
 
         }

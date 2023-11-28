@@ -12,10 +12,10 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
     public MapperManualTemplate<TFrom, TTo> For<TProperty>(Expression<Func<TTo, TProperty>> propTo, Expression<Func<TFrom, TProperty>> propFrom)
     {
-        var fromName = GetPropertyName(propFrom);
-        var toName = GetPropertyName(propTo);
+        var fromName = this.GetPropertyName(propFrom);
+        var toName = this.GetPropertyName(propTo);
 
-        _syntaxBuilder.AppendFormat(SyntaxPropertyBind , toName, fromName);
+		this._syntaxBuilder.AppendFormat(SyntaxPropertyBind , toName, fromName);
 
         return this;
     }
@@ -23,9 +23,9 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
     private int index = 0;
     public MapperManualTemplate<TFrom, TTo> For<TProperty>(Expression<Func<TTo, TProperty>> propTo, string rightSideOfAssignment)
     {
-        var toName = GetPropertyName(propTo);
+        var toName = this.GetPropertyName(propTo);
 
-        _syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightSideOfAssignment);
+		this._syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightSideOfAssignment);
 
         return this;
     }
@@ -34,11 +34,11 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
         if(typeof(TFrom).GetProperties().Any(p => p.GetIndexParameters().Length != 0)) 
             throw new ArgumentException("From type must be a type with an indexer");
 
-        var toName = GetPropertyName(propTo);
+        var toName = this.GetPropertyName(propTo);
         
-        var rightStr = string.Format(rightSideAssignment, SyntaxVarFrom, indexOffset + index++);
+        var rightStr = string.Format(rightSideAssignment, SyntaxVarFrom, indexOffset + this.index++);
 
-        _syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
+		this._syntaxBuilder.AppendFormat(SyntaxPropertyAssign, toName, rightStr);
 
         return this;
     }
@@ -47,15 +47,15 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
         if(typeof(TFrom).GetProperties().Any(p => p.GetIndexParameters().Length != 0)) 
             throw new ArgumentException("From type must be a type with an indexer");
 
-        var toName = GetPropertyName(propTo);
+        var toName = this.GetPropertyName(propTo);
 
         var parser = new ParseUTF8();
 
         var right = rightSideOfAssignment(parser);
         
-        var rightStr = string.Format(right(indexOffset + index++), SyntaxVarFrom);
+        var rightStr = string.Format(right(indexOffset + this.index++), SyntaxVarFrom);
 
-        _syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
+		this._syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
 
         return this;
     }
@@ -64,18 +64,18 @@ public class MapperManualTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
         if(typeof(TFrom).GetProperties().Any(p => p.GetIndexParameters().Length != 0)) 
             throw new ArgumentException("From type must be a type with an indexer");
 
-        var toName = GetPropertyName(propTo);
+        var toName = this.GetPropertyName(propTo);
 
         var parser = new ParseUTF8();
 
         var right = rightSideOfAssignment(parser);
         
-        var rightStr = string.Format(right(indexOffset + index++, "\"" + parseFormat + "\""), SyntaxVarFrom);
+        var rightStr = string.Format(right(indexOffset + this.index++, "\"" + parseFormat + "\""), SyntaxVarFrom);
 
-        _syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
+		this._syntaxBuilder.Append(string.Format(SyntaxPropertyAssign, toName, rightStr).AsSpan());
 
         return this;
     }
     protected override void GenerateBody(out StringBuilder syntaxBuilder) 
-        => syntaxBuilder =_syntaxBuilder;
+        => syntaxBuilder = this._syntaxBuilder;
 }

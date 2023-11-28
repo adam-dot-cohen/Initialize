@@ -33,7 +33,7 @@ namespace Initialize.Tests.Reflection {
                 if (!descriptors.TryGetValue(objectType, out descriptor)) {
                     try
                     {
-                        descriptor = BuildDescriptor(objectType);
+                        descriptor = this.BuildDescriptor(objectType);
                     }
                     catch
                     {

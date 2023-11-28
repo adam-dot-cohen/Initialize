@@ -12,7 +12,7 @@
         /// <param name="ordinal"></param>
         public OrdinalAttribute(ushort ordinal)
         {
-            Ordinal = ordinal;
+			this.Ordinal = ordinal;
         }
 
         /// <summary>

@@ -20,13 +20,13 @@ public ref struct DelimitedBinaryParser
     int _lastFieldIndex = 0;
     bool _complete = false;
 
-    public Span<byte> LastFieldValue => _lastFieldValue;
-    public int LastFieldIndex => _lastFieldIndex;
+    public Span<byte> LastFieldValue => this._lastFieldValue;
+    public int LastFieldIndex => this._lastFieldIndex;
 
     public DelimitedBinaryParser(Span<byte> bytes, byte delimeter = 0x2C)
     {
-        _delimiter = delimeter;
-        _buffer = _bufferRemaining = bytes;
+		this._delimiter = delimeter;
+		this._buffer = this._bufferRemaining = bytes;
     }
 
     /// <summary>
@@ -35,20 +35,20 @@ public ref struct DelimitedBinaryParser
      [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> Next()
     {
-        if(_complete) 
+        if(this._complete) 
             throw new IndexOutOfRangeException("There are no more fields to be parsed.");
-			
-        _bufferPosition = _bufferRemaining.IndexOf(_delimiter); // next delimiter
 
-        if ((_complete =_bufferPosition == -1))	return _lastFieldValue = _bufferRemaining; // return last
-			 
-        _lastFieldValue = _bufferRemaining.Slice(0, _bufferPosition); // parse field
-			 
-        _bufferRemaining  = _bufferRemaining.Slice(++_bufferPosition); // advance past delimter
+		this._bufferPosition = this._bufferRemaining.IndexOf(this._delimiter); // next delimiter
+
+        if ((this._complete = this._bufferPosition == -1))	return this._lastFieldValue = this._bufferRemaining; // return last
+
+		this._lastFieldValue = this._bufferRemaining.Slice(0, this._bufferPosition); // parse field
+
+		this._bufferRemaining  = this._bufferRemaining.Slice(++this._bufferPosition); // advance past delimter
+
+		this._lastFieldIndex++; // track field for rewind
 			
-        _lastFieldIndex++; // track field for rewind
-			
-        return _lastFieldValue;
+        return this._lastFieldValue;
     }
 
     public Span<byte> this[int index]
@@ -56,22 +56,22 @@ public ref struct DelimitedBinaryParser
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            if(index < _lastFieldIndex) Rewind(index);
+            if(index < this._lastFieldIndex) this.Rewind(index);
 			
-            if(_complete) 
+            if(this._complete) 
                 throw new IndexOutOfRangeException("There are no more fields to be parsed.");
-			
-            _bufferPosition = _bufferRemaining.IndexOf(_delimiter); // next delimiter
 
-            if ((_complete =_bufferPosition == -1))	return _lastFieldValue = _bufferRemaining; // return last
-			 
-            _lastFieldValue = _bufferRemaining.Slice(0, _bufferPosition); // parse field
-			 
-            _bufferRemaining  = _bufferRemaining.Slice(++_bufferPosition); // advance past delimter
+			this._bufferPosition = this._bufferRemaining.IndexOf(this._delimiter); // next delimiter
+
+            if ((this._complete = this._bufferPosition == -1))	return this._lastFieldValue = this._bufferRemaining; // return last
+
+			this._lastFieldValue = this._bufferRemaining.Slice(0, this._bufferPosition); // parse field
+
+			this._bufferRemaining  = this._bufferRemaining.Slice(++this._bufferPosition); // advance past delimter
+
+			this._lastFieldIndex++; // track field for rewind
 			
-            _lastFieldIndex++; // track field for rewind
-			
-            return _lastFieldValue;
+            return this._lastFieldValue;
         }
     }
 	

@@ -112,8 +112,8 @@ public class InitializeCompilationException : Exception
 {
     public InitializeCompilationException(string message,  SyntaxTree syntaxString) : base(message)
     {
-        SyntaxTree = syntaxString;
-        SyntaxTreeText = syntaxString.GetRoot().NormalizeWhitespace().ToFullString();
+		this.SyntaxTree = syntaxString;
+		this.SyntaxTreeText = syntaxString.GetRoot().NormalizeWhitespace().ToFullString();
     }
     public SyntaxTree SyntaxTree { get; }
     public string SyntaxTreeText { get; set; }

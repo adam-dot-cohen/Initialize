@@ -47,7 +47,7 @@ public class ChampionChallengerEnumerableMapping
     [Benchmark(Description = "AutoMapper")]
     public void AutoMapperEnumerable()
     {
-        var result = this._autoMapper.Map<IEnumerable<Test>>(_testEnumerable);
+        var result = this._autoMapper.Map<IEnumerable<Test>>(this._testEnumerable);
         
        // if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
     }
@@ -55,7 +55,7 @@ public class ChampionChallengerEnumerableMapping
     [Benchmark(Description = "Initialize")]
     public void MapperEnumerable()
     {
-        var result = Mapper<Test, Test2>.Map(_testEnumerable);
+        var result = Mapper<Test, Test2>.Map(this._testEnumerable);
         
         //if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
     }

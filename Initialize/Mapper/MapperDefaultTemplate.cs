@@ -45,7 +45,7 @@ public class MapperDefaultTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
                         syntaxBuilder.Append(string.Format(Syntax, propTo.Name, propFrom.Name).AsSpan());
                     else if (!ptype.IsAssignableTo(typeof(IEnumerable)))
                         syntaxBuilder.Append(string.Format(SyntaxComplex, propTo.Name, propFrom.Name,
-                            GetTypeSyntax(ptype)).AsSpan());
+							this.GetTypeSyntax(ptype)).AsSpan());
                     else if (ptype.IsAssignableTo(typeof(IDictionary)))
                     {
                         Type[] types = ptype.GetGenericArguments();
@@ -54,10 +54,10 @@ public class MapperDefaultTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
 
                         var keySyntax = keyType.IsValueType || keyType == typeof(string)
                             ? SyntaxDictionaryKey
-                            : string.Format(SyntaxComplexAddBody, SyntaxDictionaryKey, GetTypeSyntax(keyType));
+                            : string.Format(SyntaxComplexAddBody, SyntaxDictionaryKey, this.GetTypeSyntax(keyType));
                         var valueSyntax = valueType.IsValueType
                             ? SyntaxDictionaryValue
-                            : string.Format(SyntaxComplexAddBody, SyntaxDictionaryValue, GetTypeSyntax(valueType));
+                            : string.Format(SyntaxComplexAddBody, SyntaxDictionaryValue, this.GetTypeSyntax(valueType));
 
                         syntaxBuilder.Append(string.Format(SyntaxDictionary, propTo.Name, propFrom.Name, keySyntax, valueSyntax).AsSpan());
                     }
@@ -71,7 +71,7 @@ public class MapperDefaultTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
                         var valueSyntax = valueType.IsValueType
                             ? SyntaxComplexCollectionValue
                             : string.Format(SyntaxComplexAddBody, SyntaxComplexCollectionValue,
-                                GetTypeSyntax(valueType));
+								this.GetTypeSyntax(valueType));
 
                         var str = string.Format(SyntaxComplexCollection, propTo.Name, propFrom.Name, valueSyntax);
                         syntaxBuilder.Append(str.AsSpan());
@@ -79,7 +79,7 @@ public class MapperDefaultTemplate<TFrom, TTo> : MapperTemplateBase<TFrom, TTo>
                     else if (propFrom.PropertyType.IsArray)
                     {
                         var str = string.Format(SyntaxComplexArray, propTo.Name, propFrom.Name,
-                            GetTypeSyntax(ptype).Replace("[ ]", string.Empty).Replace("[]", string.Empty));
+							this.GetTypeSyntax(ptype).Replace("[ ]", string.Empty).Replace("[]", string.Empty));
                         syntaxBuilder.Append(str.AsSpan());
                     }
                 }

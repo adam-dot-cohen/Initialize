@@ -28,8 +28,8 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	public SpanByteAndMemory(SpanByte spanByte)
 	{
 		if (spanByte.Serialized) throw new Exception("Cannot create new SpanByteAndMemory using serialized SpanByte");
-		SpanByte = spanByte;
-		Memory = default;
+		this.SpanByte = spanByte;
+		this.Memory = default;
 	}
 
 	/// <summary>
@@ -37,8 +37,8 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	/// </summary>
 	public SpanByteAndMemory(void* pointer, int length)
 	{
-		SpanByte = new SpanByte(length, (IntPtr)pointer);
-		Memory = default;
+		this.SpanByte = new SpanByte(length, (IntPtr)pointer);
+		this.Memory = default;
 	}
 
 	/// <summary>
@@ -46,8 +46,8 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	/// </summary>
 	public int Length
 	{
-		get => SpanByte.Length;
-		set => SpanByte.Length = value;
+		get => this.SpanByte.Length;
+		set => this.SpanByte.Length = value;
 	}
 
 	/// <summary>
@@ -56,9 +56,9 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	/// <param name="memory"></param>
 	public SpanByteAndMemory(IMemoryOwner<byte> memory)
 	{
-		SpanByte = default;
-		SpanByte.Invalid = true;
-		Memory = memory;
+		this.SpanByte = default;
+		this.SpanByte.Invalid = true;
+		this.Memory = memory;
 	}
 
 	/// <summary>
@@ -68,10 +68,10 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	/// <param name="length"></param>
 	public SpanByteAndMemory(IMemoryOwner<byte> memory, int length)
 	{
-		SpanByte = default;
-		SpanByte.Invalid = true;
-		Memory = memory;
-		SpanByte.Length = length;
+		this.SpanByte = default;
+		this.SpanByte.Invalid = true;
+		this.Memory = memory;
+		this.SpanByte.Length = length;
 	}
 
 	/// <summary>
@@ -88,12 +88,12 @@ public unsafe struct SpanByteAndMemory : IHeapConvertible
 	/// <summary>
 	/// Convert to be used on heap (IMemoryOwner)
 	/// </summary>
-	public void ConvertToHeap() { SpanByte.Invalid = true; }
+	public void ConvertToHeap() { this.SpanByte.Invalid = true; }
 
 	/// <summary>
 	/// Is it allocated as SpanByte (on stack)?
 	/// </summary>
-	public bool IsSpanByte => !SpanByte.Invalid;
+	public bool IsSpanByte => !this.SpanByte.Invalid;
 }
 
 /// <summary>
@@ -133,17 +133,17 @@ public unsafe struct SpanByte
 	[FieldOffset(4)]
 	private IntPtr payload;
 
-	internal IntPtr Pointer => payload;
+	internal IntPtr Pointer => this.payload;
 
 	/// <summary>
 	/// Pointer to the beginning of payload, not including metadata if any
 	/// </summary>
 	public byte* ToPointer()
 	{
-		if (Serialized)
-			return MetadataSize + (byte*)Unsafe.AsPointer(ref payload);
+		if (this.Serialized)
+			return this.MetadataSize + (byte*)Unsafe.AsPointer(ref this.payload);
 		else
-			return MetadataSize + (byte*)payload;
+			return this.MetadataSize + (byte*)this.payload;
 	}
 
 	/// <summary>
@@ -151,10 +151,10 @@ public unsafe struct SpanByte
 	/// </summary>
 	public byte* ToPointerWithMetadata()
 	{
-		if (Serialized)
-			return (byte*)Unsafe.AsPointer(ref payload);
+		if (this.Serialized)
+			return (byte*)Unsafe.AsPointer(ref this.payload);
 		else
-			return (byte*)payload;
+			return (byte*)this.payload;
 	}
 
 	/// <summary>
@@ -162,29 +162,29 @@ public unsafe struct SpanByte
 	/// </summary>
 	public int Length
 	{
-		get { return length & ~kHeaderMask; }
-		set { length = (length & kHeaderMask) | value; }
+		get { return this.length & ~kHeaderMask; }
+		set { this.length = (this.length & kHeaderMask) | value; }
 	}
 
 	/// <summary>
 	/// Length of payload, not including metadata if any
 	/// </summary>
-	public int LengthWithoutMetadata => (length & ~kHeaderMask) - MetadataSize;
+	public int LengthWithoutMetadata => (this.length & ~kHeaderMask) - this.MetadataSize;
 
 	/// <summary>
 	/// Format of structure
 	/// </summary>
-	public bool Serialized => (length & kUnserializedBitMask) == 0;
+	public bool Serialized => (this.length & kUnserializedBitMask) == 0;
 
 	/// <summary>
 	/// Total serialized size in bytes, including header and metadata if any
 	/// </summary>
-	public int TotalSize => sizeof(int) + Length;
+	public int TotalSize => sizeof(int) + this.Length;
 
 	/// <summary>
 	/// Size of metadata header, if any (returns 0 or 8)
 	/// </summary>
-	public int MetadataSize => (length & kExtraMetadataBitMask) >> (30 - 3);
+	public int MetadataSize => (this.length & kExtraMetadataBitMask) >> (30 - 3);
 
 	/// <summary>
 	/// Constructor
@@ -205,21 +205,21 @@ public unsafe struct SpanByte
 	{
 		get
 		{
-			if (Serialized)
-				return MetadataSize > 0 ? *(long*)Unsafe.AsPointer(ref payload) : 0;
+			if (this.Serialized)
+				return this.MetadataSize > 0 ? *(long*)Unsafe.AsPointer(ref this.payload) : 0;
 			else
-				return MetadataSize > 0 ? *(long*)payload : 0;
+				return this.MetadataSize > 0 ? *(long*)this.payload : 0;
 		}
 		set
 		{
 			if (value > 0)
 			{
-				length |= kExtraMetadataBitMask;
-				Debug.Assert(Length >= MetadataSize);
-				if (Serialized)
-					*(long*)Unsafe.AsPointer(ref payload) = value;
+				this.length |= kExtraMetadataBitMask;
+				Debug.Assert(this.Length >= this.MetadataSize);
+				if (this.Serialized)
+					*(long*)Unsafe.AsPointer(ref this.payload) = value;
 				else
-					*(long*)payload = value;
+					*(long*)this.payload = value;
 			}
 		}
 	}
@@ -229,8 +229,8 @@ public unsafe struct SpanByte
 	/// </summary>
 	public void MarkExtraMetadata()
 	{
-		Debug.Assert(Length >= 8);
-		length |= kExtraMetadataBitMask;
+		Debug.Assert(this.Length >= 8);
+		this.length |= kExtraMetadataBitMask;
 	}
 
 	/// <summary>
@@ -238,7 +238,7 @@ public unsafe struct SpanByte
 	/// </summary>
 	public void UnmarkExtraMetadata()
 	{
-		length &= ~kExtraMetadataBitMask;
+		this.length &= ~kExtraMetadataBitMask;
 	}
 
 	/// <summary>
@@ -246,17 +246,17 @@ public unsafe struct SpanByte
 	/// </summary>
 	public bool Invalid
 	{
-		get { return ((length & kUnserializedBitMask) != 0) && payload == IntPtr.Zero; }
+		get { return ((this.length & kUnserializedBitMask) != 0) && this.payload == IntPtr.Zero; }
 		set
 		{
 			if (value)
 			{
-				length |= kUnserializedBitMask;
-				payload = IntPtr.Zero;
+				this.length |= kUnserializedBitMask;
+				this.payload = IntPtr.Zero;
 			}
 			else
 			{
-				if (Invalid) length = 0;
+				if (this.Invalid) this.length = 0;
 			}
 		}
 	}
@@ -267,10 +267,10 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public Span<byte> AsSpan()
 	{
-		if (Serialized)
-			return new Span<byte>(MetadataSize + (byte*)Unsafe.AsPointer(ref payload), Length - MetadataSize);
+		if (this.Serialized)
+			return new Span<byte>(this.MetadataSize + (byte*)Unsafe.AsPointer(ref this.payload), this.Length - this.MetadataSize);
 		else
-			return new Span<byte>(MetadataSize + (byte*)payload, Length - MetadataSize);
+			return new Span<byte>(this.MetadataSize + (byte*)this.payload, this.Length - this.MetadataSize);
 	}
 
 	/// <summary>
@@ -279,10 +279,10 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public ReadOnlySpan<byte> AsReadOnlySpan()
 	{
-		if (Serialized)
-			return new ReadOnlySpan<byte>(MetadataSize + (byte*)Unsafe.AsPointer(ref payload), Length - MetadataSize);
+		if (this.Serialized)
+			return new ReadOnlySpan<byte>(this.MetadataSize + (byte*)Unsafe.AsPointer(ref this.payload), this.Length - this.MetadataSize);
 		else
-			return new ReadOnlySpan<byte>(MetadataSize + (byte*)payload, Length - MetadataSize);
+			return new ReadOnlySpan<byte>(this.MetadataSize + (byte*)this.payload, this.Length - this.MetadataSize);
 	}
 
 	/// <summary>
@@ -291,10 +291,10 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public Span<byte> AsSpanWithMetadata()
 	{
-		if (Serialized)
-			return new Span<byte>((byte*)Unsafe.AsPointer(ref payload), Length);
+		if (this.Serialized)
+			return new Span<byte>((byte*)Unsafe.AsPointer(ref this.payload), this.Length);
 		else
-			return new Span<byte>((byte*)payload, Length);
+			return new Span<byte>((byte*)this.payload, this.Length);
 	}
 
 	/// <summary>
@@ -303,10 +303,10 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public ReadOnlySpan<byte> AsReadOnlySpanWithMetadata()
 	{
-		if (Serialized)
-			return new ReadOnlySpan<byte>((byte*)Unsafe.AsPointer(ref payload), Length);
+		if (this.Serialized)
+			return new ReadOnlySpan<byte>((byte*)Unsafe.AsPointer(ref this.payload), this.Length);
 		else
-			return new ReadOnlySpan<byte>((byte*)payload, Length);
+			return new ReadOnlySpan<byte>((byte*)this.payload, this.Length);
 	}
 
 	/// <summary>
@@ -316,8 +316,8 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public SpanByte Deserialize()
 	{
-		if (!Serialized) return this;
-		return new SpanByte(Length - MetadataSize, (IntPtr)(MetadataSize + (byte*)Unsafe.AsPointer(ref payload)));
+		if (!this.Serialized) return this;
+		return new SpanByte(this.Length - this.MetadataSize, (IntPtr)(this.MetadataSize + (byte*)Unsafe.AsPointer(ref this.payload)));
 	}
 
 	/// <summary>
@@ -418,7 +418,7 @@ public unsafe struct SpanByte
 	/// </summary>
 	public byte[] ToByteArray()
 	{
-		return AsReadOnlySpan().ToArray();
+		return this.AsReadOnlySpan().ToArray();
 	}
 
 	/// <summary>
@@ -426,9 +426,9 @@ public unsafe struct SpanByte
 	/// </summary>
 	public (IMemoryOwner<byte> memory, int length) ToMemoryOwner(MemoryPool<byte> pool)
 	{
-		var dst = pool.Rent(Length);
-		AsReadOnlySpan().CopyTo(dst.Memory.Span);
-		return (dst, Length);
+		var dst = pool.Rent(this.Length);
+		this.AsReadOnlySpan().CopyTo(dst.Memory.Span);
+		return (dst, this.Length);
 	}
 
 	/// <summary>
@@ -446,8 +446,8 @@ public unsafe struct SpanByte
 	/// <param name="dst"></param>
 	public bool TryCopyTo(ref SpanByte dst)
 	{
-		if (dst.Length < Length) return false;
-		CopyTo(ref dst);
+		if (dst.Length < this.Length) return false;
+		this.CopyTo(ref dst);
 		return true;
 	}
 
@@ -459,8 +459,8 @@ public unsafe struct SpanByte
 	public void CopyTo(ref SpanByte dst)
 	{
 		dst.UnmarkExtraMetadata();
-		dst.ExtraMetadata = ExtraMetadata;
-		AsReadOnlySpan().CopyTo(dst.AsSpan());
+		dst.ExtraMetadata = this.ExtraMetadata;
+		this.AsReadOnlySpan().CopyTo(dst.AsSpan());
 	}
 
 	/// <summary>
@@ -472,13 +472,13 @@ public unsafe struct SpanByte
 	/// <returns></returns>
 	public bool ShrinkSerializedLength(int newLength)
 	{
-		if (newLength > Length) return false;
+		if (newLength > this.Length) return false;
 
 		// Zero-fill extra space - needed so log scan does not see spurious data
-		if (newLength < Length)
+		if (newLength < this.Length)
 		{
-			AsSpanWithMetadata().Slice(newLength).Clear();
-			Length = newLength;
+			this.AsSpanWithMetadata().Slice(newLength).Clear();
+			this.Length = newLength;
 		}
 		return true;
 	}
@@ -492,18 +492,18 @@ public unsafe struct SpanByte
 	{
 		if (dst.IsSpanByte)
 		{
-			if (dst.Length >= Length)
+			if (dst.Length >= this.Length)
 			{
-				dst.Length = Length;
-				AsReadOnlySpan().CopyTo(dst.SpanByte.AsSpan());
+				dst.Length = this.Length;
+				this.AsReadOnlySpan().CopyTo(dst.SpanByte.AsSpan());
 				return;
 			}
 			dst.ConvertToHeap();
 		}
 
-		dst.Memory = memoryPool.Rent(Length);
-		dst.Length = Length;
-		AsReadOnlySpan().CopyTo(dst.Memory.Memory.Span);
+		dst.Memory = memoryPool.Rent(this.Length);
+		dst.Length = this.Length;
+		this.AsReadOnlySpan().CopyTo(dst.Memory.Memory.Span);
 	}
 
 	/// <summary>
@@ -515,26 +515,26 @@ public unsafe struct SpanByte
 	{
 		if (dst.IsSpanByte)
 		{
-			if (dst.Length >= TotalSize)
+			if (dst.Length >= this.TotalSize)
 			{
-				dst.Length = TotalSize;
+				dst.Length = this.TotalSize;
 				var span = dst.SpanByte.AsSpan();
 				fixed (byte* ptr = span)
-					*(int*)ptr = Length;
-				dst.SpanByte.ExtraMetadata = ExtraMetadata;
+					*(int*)ptr = this.Length;
+				dst.SpanByte.ExtraMetadata = this.ExtraMetadata;
 
-				AsReadOnlySpan().CopyTo(span.Slice(sizeof(int) + MetadataSize));
+				this.AsReadOnlySpan().CopyTo(span.Slice(sizeof(int) + this.MetadataSize));
 				return;
 			}
 			dst.ConvertToHeap();
 		}
 
-		dst.Memory = memoryPool.Rent(TotalSize);
-		dst.Length = TotalSize;
+		dst.Memory = memoryPool.Rent(this.TotalSize);
+		dst.Length = this.TotalSize;
 		fixed (byte* ptr = dst.Memory.Memory.Span)
-			*(int*)ptr = Length;
-		dst.SpanByte.ExtraMetadata = ExtraMetadata;
-		AsReadOnlySpan().CopyTo(dst.Memory.Memory.Span.Slice(sizeof(int) + MetadataSize));
+			*(int*)ptr = this.Length;
+		dst.SpanByte.ExtraMetadata = this.ExtraMetadata;
+		this.AsReadOnlySpan().CopyTo(dst.Memory.Memory.Span.Slice(sizeof(int) + this.MetadataSize));
 	}
 
 	/// <summary>
@@ -543,22 +543,22 @@ public unsafe struct SpanByte
 	/// <param name="destination"></param>
 	public void CopyTo(byte* destination)
 	{
-		if (Serialized)
+		if (this.Serialized)
 		{
-			*(int*)destination = length;
-			Buffer.MemoryCopy(Unsafe.AsPointer(ref payload), destination + sizeof(int), Length, Length);
+			*(int*)destination = this.length;
+			Buffer.MemoryCopy(Unsafe.AsPointer(ref this.payload), destination + sizeof(int), this.Length, this.Length);
 		}
 		else
 		{
-			*(int*)destination = length & ~kUnserializedBitMask;
-			Buffer.MemoryCopy((void*)payload, destination + sizeof(int), Length, Length);
+			*(int*)destination = this.length & ~kUnserializedBitMask;
+			Buffer.MemoryCopy((void*)this.payload, destination + sizeof(int), this.Length, this.Length);
 		}
 	}
 
 	/// <inheritdoc/>
 	public override string ToString()
 	{
-		var bytes = AsSpan();
+		var bytes = this.AsSpan();
 		var len = Math.Min(this.Length, 8);
 		StringBuilder sb = new();
 		for (var ii = 0; ii < len; ++ii)

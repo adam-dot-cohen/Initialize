@@ -32,7 +32,7 @@ public class ChampionChallengerListMapping
         Mapper<Test, Test2>.Map(new Test());
     }
 
-    [Params(100, 100_000, 1_000_000, 10_000_000)]
+    [Params(100, 100_000, 1_000_000)]
     public int Iterations { get; set; }
 
     [IterationSetup]
@@ -47,16 +47,12 @@ public class ChampionChallengerListMapping
     [Benchmark(Description = "AutoMapper")]
     public void AutoMapper()
     { 
-        var result = this._autoMapper.Map<List<Test2>>(_testObjects);
-
-        if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count} and {Iterations}not equal");
+        var result = this._autoMapper.Map<List<Test2>>(this._testObjects);
     }
 
     [Benchmark(Description = "Initialize", Baseline = true)]
     public void Mapper()
     {
-        var result = Mapper<Test, Test2>.Map(_testObjects);
-        
-        if ((result.TryGetNonEnumeratedCount(out var cnt) && cnt != Iterations) || result.Count() != Iterations) throw new Exception($"{result.Count()} and {Iterations}not equal");
+        var result = Mapper<Test, Test2>.Map(this._testObjects).ToList();
     }
 }

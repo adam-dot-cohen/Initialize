@@ -235,7 +235,7 @@ namespace Initialize.Reflection
             /// </summary>
             public override MemberSet GetMembers()
             {
-                return members ?? (members = new MemberSet(Type));
+                return this.members ?? (this.members = new MemberSet(this.Type));
             }
         }
         sealed class DelegateAccessor : RuntimeTypeAccessor
@@ -247,7 +247,7 @@ namespace Initialize.Reflection
             private readonly Type type;
             protected override Type Type
             {
-                get { return type; }
+                get { return this.type; }
             }
             public DelegateAccessor(Dictionary<string, int> map, Func<int, object, object> getter, Action<int, object, object> setter, Func<object> ctor, Type type)
             {
@@ -257,23 +257,23 @@ namespace Initialize.Reflection
                 this.ctor = ctor;
                 this.type = type;
             }
-            public override bool CreateNewSupported { get { return ctor != null; } }
+            public override bool CreateNewSupported { get { return this.ctor != null; } }
             public override object CreateNew()
             {
-                return ctor != null ? ctor() : base.CreateNew();
+                return this.ctor != null ? this.ctor() : base.CreateNew();
             }
             public override object this[object target, string name]
             {
                 get
                 {
                     int index;
-                    if (map.TryGetValue(name, out index)) return getter(index, target);
+                    if (this.map.TryGetValue(name, out index)) return this.getter(index, target);
                     else throw new ArgumentOutOfRangeException("name");
                 }
                 set
                 {
                     int index;
-                    if (map.TryGetValue(name, out index)) setter(index, target, value);
+                    if (this.map.TryGetValue(name, out index)) this.setter(index, target, value);
                     else throw new ArgumentOutOfRangeException("name");
                 }
             }

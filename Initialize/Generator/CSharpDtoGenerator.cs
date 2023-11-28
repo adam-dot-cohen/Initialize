@@ -20,17 +20,17 @@ public class CSharpDtoGenerator : ICSharpGenerator
     private bool _notifyOnPropertyChanged;
     public CSharpDtoGenerator(Type srcType, string nameSuffix, string namesSpace, bool notifyOnPropertyChanged = true)
     {
-        _srcType = srcType;
-        _nameSuffix = nameSuffix;
-        _namesSpace = namesSpace;
-        _notifyOnPropertyChanged = notifyOnPropertyChanged;
+		this._srcType = srcType;
+		this._nameSuffix = nameSuffix;
+		this._namesSpace = namesSpace;
+		this._notifyOnPropertyChanged = notifyOnPropertyChanged;
     }
 
     public IEnumerable<MetadataReference> References { get; set; }
 
     public CompilationUnitSyntax Generate()
     {
-        References = new List<MetadataReference>
+		this.References = new List<MetadataReference>
         {
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System),
             MetadataReference.CreateFromFile(FrameworkAssemblyPaths.System_Private_CoreLib),
@@ -38,7 +38,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
             MetadataReference.CreateFromFile(typeof(DataContractAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(MulticastDelegate).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(System.ComponentModel.INotifyPropertyChanged).Assembly.Location),
-            MetadataReference.CreateFromFile(_srcType.Assembly.Location),
+            MetadataReference.CreateFromFile(this._srcType.Assembly.Location),
         };
         return CompilationUnit()
         .WithUsings
@@ -84,15 +84,15 @@ public class CSharpDtoGenerator : ICSharpGenerator
             (
                 FileScopedNamespaceDeclaration
                 (
-                    IdentifierName(_namesSpace)
+                    IdentifierName(this._namesSpace)
                 )
                 .WithMembers
                 (
                     SingletonList<MemberDeclarationSyntax>
                     (
-                        _notifyOnPropertyChanged
-                        ? ClassDeclarationWithNotifyPropertyChanged()
-                        : ClassDeclarationWithoutNotifyPropertyChanged()
+						this._notifyOnPropertyChanged
+                        ? this.ClassDeclarationWithNotifyPropertyChanged()
+                        : this.ClassDeclarationWithoutNotifyPropertyChanged()
                     )
                 )
             )
@@ -100,7 +100,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
     }
 
     private ClassDeclarationSyntax ClassDeclarationWithoutNotifyPropertyChanged()
-        => ClassDeclaration($"{_srcType.Name}{_nameSuffix}")
+        => ClassDeclaration($"{this._srcType.Name}{this._nameSuffix}")
             .WithAttributeLists
             (
                 SingletonList<AttributeListSyntax>
@@ -126,11 +126,11 @@ public class CSharpDtoGenerator : ICSharpGenerator
             )
             .WithMembers
             (
-                        List(Members(notifyPropertyChanged: false))
+                        List(this.Members(notifyPropertyChanged: false))
             );
     
     private ClassDeclarationSyntax ClassDeclarationWithNotifyPropertyChanged()
-        => ClassDeclaration($"{_srcType.Name}{_nameSuffix}")
+        => ClassDeclaration($"{this._srcType.Name}{this._nameSuffix}")
             .WithAttributeLists
             (
                 SingletonList<AttributeListSyntax>
@@ -169,7 +169,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
             )
             .WithMembers
             (
-                List(Members(notifyPropertyChanged: true))
+                List(this.Members(notifyPropertyChanged: true))
             );
 
     private IEnumerable<MemberDeclarationSyntax> Members(int startIndex = 0, bool notifyPropertyChanged = true)
@@ -178,7 +178,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
         new MemberDeclarationSyntax[]{
                 ConstructorDeclaration
                 (
-                    Identifier($"{_srcType.Name}{_nameSuffix}")
+                    Identifier($"{this._srcType.Name}{this._nameSuffix}")
                 )
                 .WithModifiers
                 (
@@ -193,7 +193,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
                 ),
                 ConstructorDeclaration
                 (
-                    Identifier($"{_srcType.Name}{_nameSuffix}")
+                    Identifier($"{this._srcType.Name}{this._nameSuffix}")
                 )
                 .WithModifiers
                 (
@@ -208,7 +208,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
                     (
                         SeparatedList<ParameterSyntax>
                         (
-                            MethodArguments(new List<(Type, string)> { (_srcType, _srcType.Name) })
+							this.MethodArguments(new List<(Type, string)> { (this._srcType, this._srcType.Name) })
                         )
                     )
                 )
@@ -216,17 +216,17 @@ public class CSharpDtoGenerator : ICSharpGenerator
                 (
                     Block
                     (
-                        AssignmentBody(_srcType.GetProperties().Select(r => r.Name))
+						this.AssignmentBody(this._srcType.GetProperties().Select(r => r.Name))
                     )
                 )
             }
             .Union(
-            _srcType.GetProperties().SelectMany(prop =>
+			this._srcType.GetProperties().SelectMany(prop =>
             new MemberDeclarationSyntax[]
             {
 
-                DeclareField(prop),
-                DeclareProperty(prop, notifyPropertyChanged)
+				this.DeclareField(prop),
+				this.DeclareProperty(prop, notifyPropertyChanged)
                 .WithAttributeLists
                 (
                     SingletonList<AttributeListSyntax>
@@ -274,8 +274,8 @@ public class CSharpDtoGenerator : ICSharpGenerator
                 ?
                 new MemberDeclarationSyntax[]
                 {
-                    PropertyChangedEvent(),
-                    RaisePropertyChange()
+					this.PropertyChangedEvent(),
+					this.RaisePropertyChange()
                 } 
                 :
                 new MemberDeclarationSyntax[]{}
@@ -285,7 +285,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
     private PropertyDeclarationSyntax DeclareProperty(PropertyInfo prop, bool notifyPropertyChanged = true)
         => PropertyDeclaration
         (
-            IdentifierName(GetTypeName(prop.PropertyType)),
+            IdentifierName(this.GetTypeName(prop.PropertyType)),
             Identifier(prop.Name)
         )
         .WithModifiers
@@ -369,7 +369,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
         (
             VariableDeclaration
             (
-                IdentifierName(GetTypeName(type.PropertyType))
+                IdentifierName(this.GetTypeName(type.PropertyType))
             )
             .WithVariables
             (
@@ -418,7 +418,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
                                 )
                                 .WithType
                                 (
-                                    IdentifierName(GetTypeName(arg.Item1))
+                                    IdentifierName(this.GetTypeName(arg.Item1))
                                 )
                         }
                     )
@@ -434,7 +434,7 @@ public class CSharpDtoGenerator : ICSharpGenerator
                                 )
                                 .WithType
                                 (
-                                    IdentifierName(GetTypeName(arg.Item1))
+                                    IdentifierName(this.GetTypeName(arg.Item1))
                                 )
                         };
                     }

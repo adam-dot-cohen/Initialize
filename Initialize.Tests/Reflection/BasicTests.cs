@@ -313,7 +313,7 @@ namespace Initialize.Tests.Reflection
         public class HasGetterPrivateSetter
         {
             public int Foo { get; private set; }
-            public HasGetterPrivateSetter(int value) { Foo = value; }
+            public HasGetterPrivateSetter(int value) { this.Foo = value; }
         }
         [Test]
         public void TestHasGetterPrivateSetter()
@@ -327,7 +327,7 @@ namespace Initialize.Tests.Reflection
         {
             public MixedAccess()
             {
-                Foo = Bar = Alpha = Beta = 2;
+				this.Foo = this.Bar = this.Alpha = this.Beta = 2;
             }
             public int Foo { get; private set; }
             public int Bar { private get; set; }

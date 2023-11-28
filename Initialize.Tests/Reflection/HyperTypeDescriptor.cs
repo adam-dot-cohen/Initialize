@@ -12,13 +12,13 @@ namespace Initialize.Tests.Reflection {
         static readonly Dictionary<PropertyInfo, PropertyDescriptor> properties = new();
         internal HyperTypeDescriptor(ICustomTypeDescriptor parent)
             : base(parent) {
-            propertyCollections = WrapProperties(parent.GetProperties());
+			this.propertyCollections = WrapProperties(parent.GetProperties());
         }
         public sealed override PropertyDescriptorCollection GetProperties(Attribute[] attributes) {
-            return propertyCollections;
+            return this.propertyCollections;
         }
         public sealed override PropertyDescriptorCollection GetProperties() {
-            return propertyCollections;
+            return this.propertyCollections;
         }
         private static PropertyDescriptorCollection WrapProperties(PropertyDescriptorCollection oldProps) {
             PropertyDescriptor[] newProps = new PropertyDescriptor[oldProps.Count];

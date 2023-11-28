@@ -39,11 +39,11 @@ namespace Initialize.Tests.Reflection
             private int _val;
             public int Val
             {
-                get => _val;
-                set => _val = value;
+                get => this._val;
+                set => this._val = value;
             }
-            public ref int Ref => ref _val;
-            public ref readonly int RefReadOnly => ref _val;
+            public ref int Ref => ref this._val;
+            public ref readonly int RefReadOnly => ref this._val;
 
         }
     }
